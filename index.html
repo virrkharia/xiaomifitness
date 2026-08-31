@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Steps &amp; sleep</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --day-bg: #F5EFE4;
+    --night-bg: #232A44;
+    --ink: #22262F;
+    --ink-soft: #5C6270;
+    --steps-color: #C97A2B;
+    --steps-color-soft: rgba(201, 122, 43, 0.18);
+    --sleep-color: #8D7BC7;
+    --sleep-deep: #5B4B8A;
+    --sleep-light: #B7A8E8;
+    --line: rgba(34, 38, 47, 0.12);
+    --card-bg: rgba(255, 255, 255, 0.55);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    color: var(--ink);
+    background: linear-gradient(180deg, var(--day-bg) 0%, var(--day-bg) 46%, var(--night-bg) 46%, var(--night-bg) 100%);
+    min-height: 100vh;
+  }
+
+  header {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 56px 24px 32px;
+  }
+
+  h1 {
+    font-family: 'Newsreader', serif;
+    font-weight: 500;
+    font-size: clamp(32px, 5vw, 48px);
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+  }
+
+  .subtitle {
+    color: var(--ink-soft);
+    font-size: 16px;
+    margin: 0;
+    max-width: 60ch;
+  }
+
+  .range-picker {
+    display: flex;
+    gap: 8px;
+    margin: 28px auto 0;
+    max-width: 920px;
+    padding: 0 24px;
+  }
+
+  .range-picker button {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+    background: rgba(255,255,255,0.6);
+    color: var(--ink);
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+  }
+
+  .range-picker button:hover { background: rgba(255,255,255,0.9); }
+  .range-picker button.active {
+    background: var(--ink);
+    color: white;
+    border-color: var(--ink);
+  }
+
+  main {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 24px 24px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+  }
+
+  .stat {
+    background: var(--card-bg);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 18px 20px;
+    backdrop-filter: blur(6px);
+  }
+
+  .stat .value {
+    font-family: 'Newsreader', serif;
+    font-size: 30px;
+    font-weight: 500;
+    line-height: 1.1;
+  }
+
+  .stat .label {
+    color: var(--ink-soft);
+    font-size: 13px;
+    margin-top: 4px;
+  }
+
+  .panel {
+    background: var(--card-bg);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 24px;
+    backdrop-filter: blur(6px);
+  }
+
+  .panel h2 {
+    font-family: 'Newsreader', serif;
+    font-weight: 500;
+    font-size: 22px;
+    margin: 0 0 4px;
+  }
+
+  .panel p.hint {
+    color: var(--ink-soft);
+    font-size: 13px;
+    margin: 0 0 18px;
+  }
+
+  .panel.night {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.14);
+    color: #EDEBF6;
+  }
+
+  .panel.night p.hint { color: #B7BAD1; }
+
+  canvas { max-height: 320px; }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 24px;
+    color: var(--ink-soft);
+  }
+
+  .empty-state code {
+    background: rgba(0,0,0,0.06);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  footer {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+    color: #B7BAD1;
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Steps &amp; sleep</h1>
+  <p class="subtitle">A running record of daily activity and sleep, pulled automatically each morning.</p>
+</header>
+
+<div class="range-picker" id="rangePicker">
+  <button data-days="7">7 days</button>
+  <button data-days="30" class="active">30 days</button>
+  <button data-days="90">90 days</button>
+  <button data-days="0">All time</button>
+</div>
+
+<main id="main">
+  <div class="stats-row" id="statsRow"></div>
+  <div class="panel">
+    <h2>Steps</h2>
+    <p class="hint">Daily step count</p>
+    <canvas id="stepsChart"></canvas>
+  </div>
+  <div class="panel night">
+    <h2>Sleep</h2>
+    <p class="hint">Deep and light sleep, hours per night</p>
+    <canvas id="sleepChart"></canvas>
+  </div>
+</main>
+
+<footer>Data pulled directly from Mi Fitness. Updated daily.</footer>
+
+<script>
+let allData = [];
+let stepsChart, sleepChart;
+
+function fmtDate(iso) {
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
+function average(arr) {
+  const vals = arr.filter(v => v !== null && v !== undefined && !isNaN(v));
+  if (!vals.length) return 0;
+  return vals.reduce((a, b) => a + b, 0) / vals.length;
+}
+
+function render(days) {
+  const filtered = days === 0 ? allData : allData.slice(-days);
+  const labels = filtered.map(d => fmtDate(d.date));
+
+  const steps = filtered.map(d => d.steps || 0);
+  const deepHrs = filtered.map(d => (d.sleep_deep_min || 0) / 60);
+  const lightHrs = filtered.map(d => (d.sleep_light_min || 0) / 60);
+  const totalSleepHrs = filtered.map(d => (d.sleep_total_min || 0) / 60);
+
+  const avgSteps = Math.round(average(steps));
+  const avgSleep = average(totalSleepHrs);
+  const bestSteps = Math.max(0, ...steps);
+
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat">
+      <div class="value">${avgSteps.toLocaleString()}</div>
+      <div class="label">Avg. daily steps</div>
+    </div>
+    <div class="stat">
+      <div class="value">${avgSleep.toFixed(1)}h</div>
+      <div class="label">Avg. sleep / night</div>
+    </div>
+    <div class="stat">
+      <div class="value">${bestSteps.toLocaleString()}</div>
+      <div class="label">Best day (steps)</div>
+    </div>
+    <div class="stat">
+      <div class="value">${filtered.length}</div>
+      <div class="label">Days shown</div>
+    </div>
+  `;
+
+  if (stepsChart) stepsChart.destroy();
+  if (sleepChart) sleepChart.destroy();
+
+  const stepsCtx = document.getElementById('stepsChart').getContext('2d');
+  stepsChart = new Chart(stepsCtx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Steps',
+        data: steps,
+        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--steps-color-soft'),
+        borderColor: getComputedStyle(document.documentElement).getPropertyValue('--steps-color'),
+        borderWidth: 1.5,
+        borderRadius: 4,
+        maxBarThickness: 28
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false } },
+        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.06)' } }
+      }
+    }
+  });
+
+  const sleepCtx = document.getElementById('sleepChart').getContext('2d');
+  sleepChart = new Chart(sleepCtx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Deep sleep',
+          data: deepHrs,
+          backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--sleep-deep'),
+          stack: 'sleep',
+          borderRadius: 4,
+          maxBarThickness: 24
+        },
+        {
+          label: 'Light sleep',
+          data: lightHrs,
+          backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--sleep-light'),
+          stack: 'sleep',
+          borderRadius: 4,
+          maxBarThickness: 24
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'top',
+          align: 'end',
+          labels: { color: '#EDEBF6', boxWidth: 12, font: { size: 12 } }
+        }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: '#B7BAD1' } },
+        y: {
+          beginAtZero: true,
+          stacked: true,
+          title: { display: true, text: 'Hours', color: '#B7BAD1' },
+          grid: { color: 'rgba(255,255,255,0.08)' },
+          ticks: { color: '#B7BAD1' }
+        }
+      }
+    }
+  });
+}
+
+async function init() {
+  try {
+    const res = await fetch('/api/data', { cache: 'no-store' });
+    if (!res.ok) throw new Error('no data yet');
+    allData = await res.json();
+  } catch (e) {
+    document.getElementById('main').innerHTML = `
+      <div class="empty-state">
+        <p>No data yet. Once the daily pull has run at least once, this page will fill in automatically.</p>
+        <p>Data is served from <code>/api/data</code> once the scheduled pull has run.</p>
+      </div>
+    `;
+    return;
+  }
+
+  if (!allData.length) {
+    document.getElementById('main').innerHTML = `<div class="empty-state"><p>No data yet.</p></div>`;
+    return;
+  }
+
+  render(30);
+
+  document.querySelectorAll('#rangePicker button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#rangePicker button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      render(parseInt(btn.dataset.days, 10));
+    });
+  });
+}
+
+init();
+</script>
+
+</body>
+</html>

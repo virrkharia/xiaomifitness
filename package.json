@@ -1,0 +1,7 @@
+{
+  "name": "xiaomi-dashboard",
+  "private": true,
+  "dependencies": {
+    "@netlify/blobs": "*"
+  }
+}
