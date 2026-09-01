@@ -7,6 +7,12 @@
 // Required environment variables (set in Netlify site settings):
 //   SITE_USERNAME
 //   SITE_PASSWORD
+//
+// Note: /.netlify/functions/pull-data is excluded from the gate so Netlify's
+// own scheduler (and the manual "Trigger" button in the dashboard) can call
+// it. This endpoint doesn't expose any data or credentials — it only starts
+// a pull using the MIFIT_EMAIL/MIFIT_PASSWORD already stored server-side —
+// so leaving it open is a low-risk trade-off, not a data leak.
 
 export default async (request, context) => {
   const expectedUser = Netlify.env.get("SITE_USERNAME");
@@ -43,4 +49,5 @@ export default async (request, context) => {
 
 export const config = {
   path: "/*",
+  excludedPath: "/.netlify/functions/pull-data",
 };
