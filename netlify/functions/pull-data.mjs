@@ -1,127 +1,139 @@
 // netlify/functions/pull-data.mjs
 //
-// Scheduled Netlify Function. Logs into a Xiaomi Mi Fitness / Mi Fit
-// account, pulls the last 7 days of steps + sleep, and merges it into
-// Netlify Blobs storage.
+// Pulls steps + sleep from Mi Fitness's current backend (de.hlth.io.mi.com)
+// using Xiaomi's standard signed-request scheme (the same one used by Mi
+// Home, Mi Band, and other Xiaomi cloud services -- this is NOT specific to
+// this project; see PiotrMachowski/Xiaomi-cloud-tokens-extractor on GitHub
+// for the reference implementation this was ported from).
 //
-// This uses the same (unofficial, reverse-engineered) endpoints the Mi
-// Fit / Mi Fitness Android app itself calls. It is not an official
-// Xiaomi or Netlify integration and can break if Xiaomi changes their
-// backend. Only use it with your own account.
+// This deliberately reuses an already-authenticated session (ssecurity +
+// cUserId + serviceToken captured once from your own phone/emulator)
+// rather than logging in -- see docs/capture-token.md. No login event
+// happens here, so there's nothing for Xiaomi's fraud detection to flag.
 //
 // Required environment variables (set in Netlify site settings):
-//   MIFIT_EMAIL     - the email you sign into Mi Fitness with
-//   MIFIT_PASSWORD  - the password for that account
+//   MIFIT_SSECURITY     - captured from the sid=miothealth login response
+//   MIFIT_CUSERID       - captured from the same response / request cookies
+//   MIFIT_SERVICETOKEN  - captured from a de.hlth.io.mi.com request's Cookie header
 
+import crypto from "node:crypto";
+import zlib from "node:zlib";
 import { getStore } from "@netlify/blobs";
 
-const APP_NAME = "com.xiaomi.hm.health";
-const APP_VERSION = "4.0.9";
-const DEVICE_ID = "02:00:00:00:00:00";
+const HOST = "de.hlth.io.mi.com";
+const PATH = "/app/v1/data/get_fitness_data_by_time";
 
-async function login(email, password) {
-  const encodedEmail = encodeURIComponent(email);
+// --- Xiaomi signing primitives (ported from Xiaomi-cloud-tokens-extractor) ---
 
-  const step1 = await fetch(
-    `https://api-user.huami.com/registrations/${encodedEmail}/tokens`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      redirect: "manual",
-      body: new URLSearchParams({
-        state: "REDIRECTION",
-        client_id: "HuaMi",
-        redirect_uri:
-          "https://s3-us-west-2.amazonws.com/hm-registration/successsignin.html",
-        token: "access",
-        password,
-      }),
-    }
-  );
+function signedNonce(ssecurityB64, nonceB64) {
+  const hash = crypto
+    .createHash("sha256")
+    .update(Buffer.concat([Buffer.from(ssecurityB64, "base64"), Buffer.from(nonceB64, "base64")]))
+    .digest();
+  return hash.toString("base64");
+}
 
-  const location = step1.headers.get("location");
-  if (!location) {
-    throw new Error(
-      `Login step 1 failed (status ${step1.status}, no redirect). Check your email/password.`
-    );
+function generateNonce() {
+  const millis = Date.now();
+  const random = crypto.randomBytes(8);
+  const minutes = Buffer.alloc(4);
+  minutes.writeUInt32BE(Math.floor(millis / 60000));
+  return Buffer.concat([random, minutes]).toString("base64");
+}
+
+// Pure-JS RC4 with the 1024 "fake round" warm-up Xiaomi's scheme uses.
+// (Implemented manually rather than via Node's crypto module, since RC4
+// is disabled by default in some OpenSSL 3 builds.)
+function rc4(keyB64, inputBuffer) {
+  const key = Buffer.from(keyB64, "base64");
+  const S = new Uint8Array(256);
+  for (let i = 0; i < 256; i++) S[i] = i;
+
+  let j = 0;
+  for (let i = 0; i < 256; i++) {
+    j = (j + S[i] + key[i % key.length]) % 256;
+    [S[i], S[j]] = [S[j], S[i]];
   }
 
-  const redirectUrl = new URL(location);
-  const params = redirectUrl.search
-    ? redirectUrl.searchParams
-    : new URLSearchParams(redirectUrl.hash.replace(/^#/, ""));
+  let i = 0;
+  j = 0;
+  const step = () => {
+    i = (i + 1) % 256;
+    j = (j + S[i]) % 256;
+    [S[i], S[j]] = [S[j], S[i]];
+    return S[(S[i] + S[j]) % 256];
+  };
 
-  const accessToken = params.get("access");
-  const countryCode = params.get("country_code") || "GB";
-  if (!accessToken) {
-    throw new Error(`Login step 1 did not return an access token. Redirect: ${location}`);
+  for (let x = 0; x < 1024; x++) step(); // warm-up, discarded
+
+  const out = Buffer.alloc(inputBuffer.length);
+  for (let x = 0; x < inputBuffer.length; x++) out[x] = inputBuffer[x] ^ step();
+  return out;
+}
+
+function encryptRc4(signedNonceB64, plaintext) {
+  return rc4(signedNonceB64, Buffer.from(plaintext, "utf-8")).toString("base64");
+}
+
+function decryptRc4(signedNonceB64, ciphertextB64) {
+  return rc4(signedNonceB64, Buffer.from(ciphertextB64, "base64"));
+}
+
+function generateEncSignature(method, urlPath, signedNonceB64, params) {
+  const parts = [method.toUpperCase(), urlPath];
+  for (const [k, v] of Object.entries(params)) parts.push(`${k}=${v}`);
+  parts.push(signedNonceB64);
+  return crypto.createHash("sha1").update(parts.join("&"), "utf-8").digest("base64");
+}
+
+// --- Building and sending one signed request ---
+
+async function fetchFitnessData(ssecurity, cUserId, serviceToken, startTimeUnixSeconds) {
+  const nonce = generateNonce();
+  const nonceSigned = signedNonce(ssecurity, nonce);
+
+  let params = {
+    data: JSON.stringify({ start_time: startTimeUnixSeconds, end_time: 0, reverse: true }),
+  };
+
+  params.rc4_hash__ = generateEncSignature("GET", PATH, nonceSigned, params);
+  for (const k of Object.keys(params)) {
+    params[k] = encryptRc4(nonceSigned, params[k]);
   }
+  params.signature = generateEncSignature("GET", PATH, nonceSigned, params);
+  params.ssecurity = ssecurity;
+  params._nonce = nonce;
 
-  const step2res = await fetch("https://account.huami.com/v2/client/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      app_name: APP_NAME,
-      dn: "account.huami.com,api-user.huami.com,api-watch.huami.com,api-analytics.huami.com,app-analytics.huami.com,api-mifit.huami.com",
-      device_id: DEVICE_ID,
-      device_model: "android_phone",
-      app_version: APP_VERSION,
-      allow_registration: "false",
-      third_name: "huami",
-      grant_type: "access_token",
-      country_code: countryCode,
-      code: accessToken,
-    }),
+  const url = new URL(`https://${HOST}${PATH}`);
+  for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
+
+  const res = await fetch(url, {
+    headers: {
+      Cookie: `cUserId=${cUserId}; serviceToken=${serviceToken}; locale=en_us`,
+      HandleParams: "true",
+      region_tag: "de",
+      Host: HOST,
+    },
   });
 
-  const creds = await step2res.json();
-  if (!creds.token_info) {
-    throw new Error(`Login step 2 did not return credentials: ${JSON.stringify(creds)}`);
+  const bodyText = await res.text();
+
+  if (!res.ok) {
+    throw new Error(`Request failed: ${res.status} -- ${bodyText.slice(0, 300)}`);
   }
 
-  return { appToken: creds.token_info.app_token, userId: creds.token_info.user_id };
-}
+  const decrypted = decryptRc4(nonceSigned, bodyText.trim());
 
-async function fetchBandData(appToken, userId, fromDate, toDate) {
-  const url = new URL("https://api-mifit.huami.com/v1/data/band_data.json");
-  url.searchParams.set("query_type", "summary");
-  url.searchParams.set("device_type", "android_phone");
-  url.searchParams.set("userid", userId);
-  url.searchParams.set("from_date", fromDate);
-  url.searchParams.set("to_date", toDate);
-
-  const res = await fetch(url, { headers: { apptoken: appToken } });
-  if (!res.ok) throw new Error(`band_data.json request failed: ${res.status}`);
-  return res.json();
-}
-
-function parseDay(entry) {
-  const summaryB64 = entry.summary;
-  if (!summaryB64) return null;
-
-  let summary;
+  // Some Xiaomi endpoints gzip the payload before encrypting it -- try that
+  // first, fall back to plain text.
+  let text;
   try {
-    summary = JSON.parse(Buffer.from(summaryB64, "base64").toString("utf-8"));
+    text = zlib.gunzipSync(decrypted).toString("utf-8");
   } catch {
-    return null;
+    text = decrypted.toString("utf-8");
   }
 
-  const stp = summary.stp || {};
-  const slp = summary.slp || {};
-  const deepMin = slp.dp || 0;
-  const lightMin = slp.lt || 0;
-
-  return {
-    date: entry.date_time || entry.date,
-    steps: stp.ttl || 0,
-    distance_m: stp.dis || 0,
-    calories: stp.cal || 0,
-    sleep_total_min: deepMin + lightMin,
-    sleep_deep_min: deepMin,
-    sleep_light_min: lightMin,
-    sleep_start: slp.st ?? null,
-    sleep_end: slp.ed ?? null,
-  };
+  return JSON.parse(text);
 }
 
 function formatDate(d) {
@@ -129,43 +141,30 @@ function formatDate(d) {
 }
 
 export default async () => {
-  const email = process.env.MIFIT_EMAIL;
-  const password = process.env.MIFIT_PASSWORD;
+  const ssecurity = process.env.MIFIT_SSECURITY;
+  const cUserId = process.env.MIFIT_CUSERID;
+  const serviceToken = process.env.MIFIT_SERVICETOKEN;
 
-  if (!email || !password) {
-    console.error("MIFIT_EMAIL / MIFIT_PASSWORD are not set");
+  if (!ssecurity || !cUserId || !serviceToken) {
+    console.error("MIFIT_SSECURITY / MIFIT_CUSERID / MIFIT_SERVICETOKEN are not set");
     return new Response("Missing credentials", { status: 500 });
   }
 
-  const today = new Date();
-  const weekAgo = new Date(today);
-  weekAgo.setDate(weekAgo.getDate() - 7);
+  const startTime = Math.floor(Date.now() / 1000) - 7 * 24 * 60 * 60;
 
   try {
-    console.log(`Logging in as ${email}...`);
-    const { appToken, userId } = await login(email, password);
+    const data = await fetchFitnessData(ssecurity, cUserId, serviceToken, startTime);
 
-    console.log("Pulling band data...");
-    const raw = await fetchBandData(appToken, userId, formatDate(weekAgo), formatDate(today));
-    const entries = raw.data || [];
+    // First-run visibility: log the raw shape so we can confirm/adjust the
+    // parsing below against what this endpoint actually returns.
+    console.log("Raw decrypted response:", JSON.stringify(data).slice(0, 2000));
 
-    const parsed = {};
-    for (const entry of entries) {
-      const day = parseDay(entry);
-      if (day && day.date) parsed[day.date] = day;
-    }
+    // TODO once we've seen a real response: map `data` into per-day
+    // {date, steps, sleep_total_min, sleep_deep_min, sleep_light_min}
+    // objects and merge into the "days" key in Blobs, the same way the
+    // manual CSV importer does.
 
-    const store = getStore("mifit-data");
-    const existingArr = (await store.get("days", { type: "json" })) || [];
-    const existing = Object.fromEntries(existingArr.map((d) => [d.date, d]));
-
-    const merged = { ...existing, ...parsed };
-    const mergedArr = Object.values(merged).sort((a, b) => a.date.localeCompare(b.date));
-
-    await store.setJSON("days", mergedArr);
-
-    console.log(`Stored ${mergedArr.length} days total (${Object.keys(parsed).length} updated)`);
-    return new Response("OK");
+    return new Response("OK -- check function logs for the raw response shape");
   } catch (err) {
     console.error("Pull failed:", err.message);
     return new Response(`Pull failed: ${err.message}`, { status: 500 });
@@ -173,5 +172,5 @@ export default async () => {
 };
 
 export const config = {
-  schedule: "15 6 * * *", // 06:15 UTC daily — edit to change the time
+  schedule: "15 6 * * *",
 };
