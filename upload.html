@@ -78,11 +78,11 @@
 <main>
   <h1>Import data</h1>
   <p>
-    Upload a CSV with your steps and sleep history. Header row required,
-    columns: <code>date,steps,sleep_total_min,sleep_deep_min,sleep_light_min,distance_m,calories</code>.
-    Only <code>date</code> (as <code>YYYY-MM-DD</code>) and <code>steps</code> are required —
-    leave other columns blank if you don't have that data yet. Re-uploading
-    is safe: matching dates get overwritten, everything else stays.
+    Upload either the raw CSV file straight from Xiaomi's "download a copy"
+    export, or a simple CSV with columns
+    <code>date,steps,sleep_total_min,sleep_deep_min,sleep_light_min,distance_m,calories</code>
+    — both are auto-detected. Re-uploading is safe any time: matching dates
+    get overwritten, everything else stays.
   </p>
 
   <div class="drop">
