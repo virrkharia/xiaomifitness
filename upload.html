@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Import data</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F5EFE4;
+    --ink: #22262F;
+    --ink-soft: #5C6270;
+    --accent: #C97A2B;
+    --line: rgba(34, 38, 47, 0.14);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    min-height: 100vh;
+  }
+  main {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 56px 24px 80px;
+  }
+  h1 {
+    font-family: 'Newsreader', serif;
+    font-weight: 500;
+    font-size: 34px;
+    margin: 0 0 8px;
+  }
+  p { color: var(--ink-soft); line-height: 1.5; }
+  code {
+    background: rgba(0,0,0,0.06);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+  }
+  .drop {
+    margin-top: 28px;
+    border: 1.5px dashed var(--line);
+    border-radius: 14px;
+    padding: 40px 24px;
+    text-align: center;
+    background: rgba(255,255,255,0.5);
+  }
+  input[type="file"] { margin-top: 12px; }
+  button {
+    margin-top: 20px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    padding: 10px 22px;
+    border-radius: 24px;
+    border: none;
+    background: var(--ink);
+    color: white;
+    cursor: pointer;
+  }
+  button:disabled { opacity: 0.5; cursor: default; }
+  #result {
+    margin-top: 20px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+    display: none;
+  }
+  #result.ok { background: rgba(60, 140, 90, 0.15); display: block; }
+  #result.err { background: rgba(180, 60, 60, 0.12); display: block; }
+  a.back { display: inline-block; margin-top: 32px; color: var(--ink-soft); font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Import data</h1>
+  <p>
+    Upload a CSV with your steps and sleep history. Header row required,
+    columns: <code>date,steps,sleep_total_min,sleep_deep_min,sleep_light_min,distance_m,calories</code>.
+    Only <code>date</code> (as <code>YYYY-MM-DD</code>) and <code>steps</code> are required —
+    leave other columns blank if you don't have that data yet. Re-uploading
+    is safe: matching dates get overwritten, everything else stays.
+  </p>
+
+  <div class="drop">
+    <input type="file" id="fileInput" accept=".csv,text/csv">
+    <br>
+    <button id="uploadBtn" disabled>Import</button>
+  </div>
+
+  <div id="result"></div>
+
+  <a class="back" href="/">&larr; Back to dashboard</a>
+</main>
+
+<script>
+const fileInput = document.getElementById('fileInput');
+const uploadBtn = document.getElementById('uploadBtn');
+const result = document.getElementById('result');
+
+fileInput.addEventListener('change', () => {
+  uploadBtn.disabled = !fileInput.files.length;
+});
+
+uploadBtn.addEventListener('click', async () => {
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  uploadBtn.disabled = true;
+  uploadBtn.textContent = 'Importing...';
+  result.className = '';
+  result.style.display = 'none';
+
+  try {
+    const text = await file.text();
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/csv' },
+      body: text,
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      result.className = 'ok';
+      result.textContent = `Imported ${data.imported} day(s). Store now has ${data.total} day(s) total.`;
+    } else {
+      result.className = 'err';
+      result.textContent = data.error || (typeof data === 'string' ? data : 'Import failed.');
+    }
+  } catch (err) {
+    result.className = 'err';
+    result.textContent = 'Import failed: ' + err.message;
+  }
+
+  uploadBtn.disabled = false;
+  uploadBtn.textContent = 'Import';
+});
+</script>
+</body>
+</html>
