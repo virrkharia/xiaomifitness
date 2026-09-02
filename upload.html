@@ -112,7 +112,7 @@ uploadBtn.addEventListener('click', async () => {
   uploadBtn.disabled = true;
   uploadBtn.textContent = 'Importing...';
   result.className = '';
-  result.style.display = 'none';
+  result.removeAttribute('style');
 
   try {
     const text = await file.text();
