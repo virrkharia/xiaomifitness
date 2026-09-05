@@ -510,6 +510,7 @@
       <input type="number" id="habitFreqCount" min="1" max="7" value="3">
     </label>
     <button id="addHabitBtn">Add habit</button>
+    <div class="status" id="habitStatus"></div>
     <div style="width:100%; overflow-x:auto;" id="habitsGridBody"></div>
   </div>
 
@@ -625,7 +626,7 @@ function row(label, value) {
 function addDays(dateStr, n) {
   const d = new Date(dateStr + 'T00:00:00');
   d.setDate(d.getDate() + n);
-  return d.toISOString().slice(0, 10);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; // local date, not UTC
 }
 
 function todayStr() {
@@ -1769,12 +1770,17 @@ async function init() {
 
   document.getElementById('addHabitBtn').addEventListener('click', async () => {
     const name = document.getElementById('habitName').value.trim();
-    if (!name) return;
+    const habitStatus = document.getElementById('habitStatus');
+    if (!name) {
+      habitStatus.textContent = 'Enter a habit name first.';
+      return;
+    }
     const category = document.getElementById('habitCategory').value;
     const freqType = document.getElementById('habitFreqType').value;
     const freqCount = parseInt(document.getElementById('habitFreqCount').value, 10) || 1;
     const frequency = freqType === 'weekly' ? { type: 'weekly', count: freqCount } : { type: 'daily' };
 
+    habitStatus.textContent = 'Adding...';
     try {
       const res = await fetch('/api/habits', {
         method: 'POST',
@@ -1782,10 +1788,17 @@ async function init() {
         body: JSON.stringify({ action: 'create', name, category, frequency }),
       });
       const data = await res.json();
+      if (!res.ok) {
+        habitStatus.textContent = data.error || 'Failed to add habit.';
+        return;
+      }
       habitDefinitions.push({ id: data.id, name, category, frequency, created_date: todayStr(), active: true });
       document.getElementById('habitName').value = '';
+      habitStatus.textContent = '';
       render();
-    } catch (err) {}
+    } catch (err) {
+      habitStatus.textContent = 'Failed to add habit: ' + err.message;
+    }
   });
 
   document.addEventListener('keydown', (e) => {
