@@ -273,8 +273,21 @@
   .manual-entry .status { font-size: 13px; color: var(--ink-soft); width: 100%; }
 
   .habits-table { border-collapse: collapse; width: 100%; margin-top: 8px; font-size: 13px; }
-  .habits-table th, .habits-table td { padding: 6px 8px; text-align: center; border-bottom: 1px solid var(--line); }
-  .habits-table th:first-child, .habits-table td:first-child { text-align: left; }
+  .habits-table th, .habits-table td { padding: 6px 8px; text-align: center; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  .habits-table th:first-child, .habits-table td:first-child {
+    text-align: left;
+    position: sticky;
+    left: 0;
+    background: #FBF8F1;
+    z-index: 1;
+  }
+  .habit-category-title {
+    font-family: 'Newsreader', serif;
+    font-size: 16px;
+    font-weight: 500;
+    margin: 18px 0 0;
+    width: 100%;
+  }
   .habit-tick {
     width: 26px; height: 26px;
     border-radius: 6px;
@@ -496,7 +509,10 @@
       <select id="habitCategory">
         <option value="supplement">Supplement</option>
         <option value="morning">Morning habit</option>
+        <option value="daytime">Daytime habit</option>
         <option value="evening">Evening habit</option>
+        <option value="sleep_hygiene">Sleep hygiene</option>
+        <option value="physical">Physical</option>
         <option value="other">Other</option>
       </select>
     </label>
@@ -510,6 +526,7 @@
       <input type="number" id="habitFreqCount" min="1" max="7" value="3">
     </label>
     <button id="addHabitBtn">Add habit</button>
+    <button id="loadStarterHabitsBtn" type="button">Load habits from my health plan</button>
     <div class="status" id="habitStatus"></div>
     <div style="width:100%; overflow-x:auto;" id="habitsGridBody"></div>
   </div>
@@ -977,20 +994,86 @@ function renderFilterChips() {
 }
 
 // ---------- habits grid ----------
-function renderHabitsGrid(labels, dateList) {
-  const container = document.getElementById('habitsGridBody');
-  const active = habitDefinitions.filter(h => h.active !== false);
+const HABIT_CATEGORIES = [
+  { id: 'supplement', label: 'Supplements' },
+  { id: 'morning', label: 'Morning habits' },
+  { id: 'daytime', label: 'Daytime habits' },
+  { id: 'evening', label: 'Evening habits' },
+  { id: 'sleep_hygiene', label: 'Sleep hygiene' },
+  { id: 'physical', label: 'Physical' },
+  { id: 'other', label: 'Other' },
+];
 
-  if (!active.length) {
-    container.innerHTML = '<p class="hint">No habits yet -- add one above.</p>';
+const STARTER_HABITS = [
+  // Food & supplements
+  { name: '140g protein', category: 'daytime', frequency: { type: 'daily' } },
+  { name: 'Fish (2x per week)', category: 'daytime', frequency: { type: 'weekly', count: 2 } },
+  { name: 'Selenium - 2 Brazil nuts', category: 'supplement', frequency: { type: 'daily' } },
+  { name: 'Citrus juice with vegetables', category: 'daytime', frequency: { type: 'daily' } },
+  { name: '5 portions fruit/veg', category: 'daytime', frequency: { type: 'daily' } },
+  { name: 'Wholegrains (1x)', category: 'daytime', frequency: { type: 'daily' } },
+  { name: '80g cruciferous vegetables', category: 'daytime', frequency: { type: 'daily' } },
+  { name: '80g dark leafy greens', category: 'daytime', frequency: { type: 'daily' } },
+  { name: 'No caffeine after 12pm', category: 'daytime', frequency: { type: 'daily' } },
+  { name: '2L water', category: 'daytime', frequency: { type: 'daily' } },
+  { name: 'Vitamin D3 + K2 (x2)', category: 'supplement', frequency: { type: 'daily' } },
+  { name: 'Omega-3s (x2)', category: 'supplement', frequency: { type: 'daily' } },
+  { name: 'Vitamin B12 (x2)', category: 'supplement', frequency: { type: 'daily' } },
+  { name: 'Dairy-free', category: 'daytime', frequency: { type: 'daily' } },
+  // Sleep
+  { name: 'Magnesium', category: 'supplement', frequency: { type: 'daily' } },
+  { name: 'Ashwagandha', category: 'supplement', frequency: { type: 'daily' } },
+  { name: 'Gratitude journal', category: 'evening', frequency: { type: 'daily' } },
+  { name: 'Meditate', category: 'evening', frequency: { type: 'daily' } },
+  { name: 'Shower', category: 'evening', frequency: { type: 'daily' } },
+  { name: 'Phone charging outside bedroom', category: 'evening', frequency: { type: 'daily' } },
+  { name: 'Room temp 17-19C', category: 'sleep_hygiene', frequency: { type: 'daily' } },
+  { name: 'Blue light blocking (1hr before bed)', category: 'sleep_hygiene', frequency: { type: 'daily' } },
+  // Physical
+  { name: 'Sauna (up to 30 min)', category: 'physical', frequency: { type: 'weekly', count: 4 } },
+  { name: 'Gym session', category: 'physical', frequency: { type: 'weekly', count: 2 } },
+  { name: 'Cardio 20 min (pool walk/swim)', category: 'physical', frequency: { type: 'weekly', count: 2 } },
+  { name: 'Yoga or tai chi', category: 'physical', frequency: { type: 'weekly', count: 2 } },
+];
+
+async function loadStarterHabits() {
+  const btn = document.getElementById('loadStarterHabitsBtn');
+  const status = document.getElementById('habitStatus');
+  const existingNames = new Set(habitDefinitions.map(h => h.name.trim().toLowerCase()));
+  const toAdd = STARTER_HABITS.filter(h => !existingNames.has(h.name.trim().toLowerCase()));
+
+  if (!toAdd.length) {
+    status.textContent = 'All starter habits are already added.';
     return;
   }
 
+  btn.disabled = true;
+  for (let i = 0; i < toAdd.length; i++) {
+    const h = toAdd[i];
+    status.textContent = `Adding ${i + 1}/${toAdd.length}: ${h.name}...`;
+    try {
+      const res = await fetch('/api/habits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'create', name: h.name, category: h.category, frequency: h.frequency }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        habitDefinitions.push({ id: data.id, name: h.name, category: h.category, frequency: h.frequency, created_date: todayStr(), active: true });
+      }
+    } catch (e) {}
+  }
+  status.textContent = `Added ${toAdd.length} habit(s).`;
+  btn.disabled = false;
+  render();
+}
+
+function renderHabitTable(habits, labels, dateList) {
   let html = '<table class="habits-table"><thead><tr><th>Habit</th>';
   labels.forEach(l => { html += `<th>${l}</th>`; });
   html += '<th>Adherence</th></tr></thead><tbody>';
 
-  active.forEach(h => {
+  habits.forEach(h => {
     html += `<tr><td>${h.name}</td>`;
     let hitCount = 0, totalCount = 0;
     dateList.forEach(d => {
@@ -1005,6 +1088,26 @@ function renderHabitsGrid(labels, dateList) {
   });
 
   html += '</tbody></table>';
+  return html;
+}
+
+function renderHabitsGrid(labels, dateList) {
+  const container = document.getElementById('habitsGridBody');
+  const active = habitDefinitions.filter(h => h.active !== false);
+
+  if (!active.length) {
+    container.innerHTML = '<p class="hint">No habits yet -- add one above.</p>';
+    return;
+  }
+
+  let html = '';
+  HABIT_CATEGORIES.forEach(cat => {
+    const inCategory = active.filter(h => (h.category || 'other') === cat.id);
+    if (!inCategory.length) return;
+    html += `<div class="habit-category-title">${cat.label}</div>`;
+    html += renderHabitTable(inCategory, labels, dateList);
+  });
+
   container.innerHTML = html;
 
   container.querySelectorAll('.habit-tick').forEach(btn => {
@@ -1283,11 +1386,25 @@ function render() {
     const deepHrs = [], lightHrs = [], remHrs = [], noDetailTotal = [];
     dateList.forEach(d => {
       const day = d ? dataByDate.get(d) : null;
-      const deep = day ? (day.sleep_deep_min || 0) / 60 : 0;
-      const light = day ? (day.sleep_light_min || 0) / 60 : 0;
-      const rem = day ? (day.raw?.sleep?.sleep_rem_duration || 0) / 60 : 0;
+      let deep = day ? (day.sleep_deep_min || 0) / 60 : 0;
+      let light = day ? (day.sleep_light_min || 0) / 60 : 0;
+      let rem = day ? (day.raw?.sleep?.sleep_rem_duration || 0) / 60 : 0;
       const total = day && day.sleep_total_min ? day.sleep_total_min / 60 : null;
       const hasBreakdown = deep > 0 || light > 0 || rem > 0;
+
+      // Xiaomi's deep/light/REM figures don't always sum to the same total
+      // as the device's own official total (short segments and awake time
+      // in between aren't reflected in the stage breakdown). Scale the
+      // three segments proportionally so the bar's actual height always
+      // matches the labeled total -- otherwise a night labeled "8.0h"
+      // could visually fall short of an 8-hour target line.
+      if (hasBreakdown && total) {
+        const rawSum = deep + light + rem;
+        if (rawSum > 0 && Math.abs(rawSum - total) > 0.01) {
+          const scale = total / rawSum;
+          deep *= scale; light *= scale; rem *= scale;
+        }
+      }
 
       if (hasBreakdown) {
         deepHrs.push(deep); lightHrs.push(light); remHrs.push(rem); noDetailTotal.push(null);
@@ -1800,6 +1917,8 @@ async function init() {
       habitStatus.textContent = 'Failed to add habit: ' + err.message;
     }
   });
+
+  document.getElementById('loadStarterHabitsBtn').addEventListener('click', loadStarterHabits);
 
   document.addEventListener('keydown', (e) => {
     if (document.getElementById('modalBackdrop').classList.contains('open')) return;
