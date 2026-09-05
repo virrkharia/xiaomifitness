@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Import glucose data</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #EDF3F2;
+    --ink: #22262F;
+    --ink-soft: #5C6270;
+    --accent: #3A7D6E;
+    --line: rgba(34, 38, 47, 0.14);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    min-height: 100vh;
+  }
+  main {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 56px 24px 80px;
+  }
+  h1 {
+    font-family: 'Newsreader', serif;
+    font-weight: 500;
+    font-size: 34px;
+    margin: 0 0 8px;
+  }
+  p { color: var(--ink-soft); line-height: 1.5; }
+  code {
+    background: rgba(0,0,0,0.06);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 13px;
+  }
+  .drop {
+    margin-top: 28px;
+    border: 1.5px dashed var(--line);
+    border-radius: 14px;
+    padding: 40px 24px;
+    text-align: center;
+    background: rgba(255,255,255,0.5);
+  }
+  input[type="file"] { margin-top: 12px; }
+  button {
+    margin-top: 20px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    padding: 10px 22px;
+    border-radius: 24px;
+    border: none;
+    background: var(--accent);
+    color: white;
+    cursor: pointer;
+  }
+  button:disabled { opacity: 0.5; cursor: default; }
+  #result {
+    margin-top: 20px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    font-size: 14px;
+  }
+  #result.ok { background: rgba(58, 125, 110, 0.15); }
+  #result.err { background: rgba(180, 60, 60, 0.12); }
+  a.back { display: inline-block; margin-top: 32px; color: var(--ink-soft); font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Import glucose data</h1>
+  <p>
+    Upload the raw CSV export from LibreView / the FreeStyle LibreLink app
+    (Account &rarr; Download a copy of your data, or the export option in
+    LibreView). No conversion needed &mdash; drop the file in as-is.
+    Re-uploading is safe any time: overlapping readings are merged, not
+    duplicated, so a weekly re-export just adds whatever's new.
+  </p>
+
+  <div class="drop">
+    <input type="file" id="fileInput" accept=".csv,text/csv">
+    <br>
+    <button id="uploadBtn" disabled>Import</button>
+  </div>
+
+  <div id="result" style="display:none;"></div>
+
+  <a class="back" href="/glucose.html">&larr; Back to glucose dashboard</a>
+</main>
+
+<script>
+const fileInput = document.getElementById('fileInput');
+const uploadBtn = document.getElementById('uploadBtn');
+const result = document.getElementById('result');
+
+fileInput.addEventListener('change', () => {
+  uploadBtn.disabled = !fileInput.files.length;
+});
+
+uploadBtn.addEventListener('click', async () => {
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  uploadBtn.disabled = true;
+  uploadBtn.textContent = 'Importing...';
+  result.className = '';
+
+  try {
+    const text = await file.text();
+    const res = await fetch('/api/glucose-upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/csv' },
+      body: text,
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      result.className = 'ok';
+      result.textContent = `Imported ${data.imported} reading(s). Store now has ${data.total_readings} reading(s) total.`;
+    } else {
+      result.className = 'err';
+      result.textContent = data.error || 'Import failed.';
+    }
+  } catch (err) {
+    result.className = 'err';
+    result.textContent = 'Import failed: ' + err.message;
+  }
+
+  uploadBtn.disabled = false;
+  uploadBtn.textContent = 'Import';
+});
+</script>
+</body>
+</html>

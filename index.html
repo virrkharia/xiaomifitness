@@ -25,6 +25,10 @@
     --intensity-color-soft: rgba(78, 140, 130, 0.18);
     --stand-color: #8A9A5B;
     --stand-color-soft: rgba(138, 154, 91, 0.18);
+    --glucose-color: #3A7DB5;
+    --glucose-color-soft: rgba(58, 125, 181, 0.18);
+    --glucose-low: #C97A2B;
+    --glucose-high: #B85C6B;
     --prev-fill: rgba(34, 38, 47, 0.10);
     --prev-border: rgba(34, 38, 47, 0.32);
     --prev-fill-night: rgba(255, 255, 255, 0.08);
@@ -63,6 +67,9 @@
     margin: 0;
     max-width: 60ch;
   }
+
+  .header-links { display: flex; gap: 18px; margin-top: 6px; }
+  .header-links a { color: inherit; font-size: 14px; }
 
   .controls {
     max-width: 920px;
@@ -209,6 +216,8 @@
 
   .panel.night p.hint { color: #B7BAD1; }
 
+  .panel.hidden { display: none; }
+
   canvas { max-height: 320px; cursor: pointer; }
 
   .empty-state {
@@ -303,8 +312,11 @@
 
 <header>
   <h1>Steps &amp; sleep</h1>
-  <p class="subtitle">A running record of daily activity and sleep, pulled automatically each morning.</p>
-  <p class="subtitle" style="margin-top: 6px;"><a href="/upload.html" style="color: inherit;">Import data manually &rarr;</a></p>
+  <p class="subtitle">A running record of daily activity, sleep, and glucose, pulled automatically each morning.</p>
+  <div class="header-links">
+    <a href="/upload.html">Import fitness data &rarr;</a>
+    <a href="/glucose-upload.html">Import glucose data &rarr;</a>
+  </div>
 </header>
 
 <div class="controls">
@@ -331,6 +343,13 @@
 
 <main id="main">
   <div class="stats-row" id="statsRow"></div>
+
+  <div class="panel" id="glucoseIntradayPanel" style="display:none;">
+    <h2>Glucose</h2>
+    <p class="hint">Readings through the day &middot; shaded band is the 3.9&ndash;10.0 mmol/L target range</p>
+    <canvas id="glucoseIntradayChart"></canvas>
+  </div>
+
   <div class="panel">
     <h2>Steps</h2>
     <p class="hint">Daily step count &middot; click a bar for detail</p>
@@ -356,9 +375,14 @@
     <p class="hint">Hours with at least one stand per day</p>
     <canvas id="standingChart"></canvas>
   </div>
+  <div class="panel" id="glucoseTrendPanel">
+    <h2>Glucose trend</h2>
+    <p class="hint">Average daily glucose &middot; imported separately from your Libre exports</p>
+    <canvas id="glucoseTrendChart"></canvas>
+  </div>
 </main>
 
-<footer>Data pulled directly from Mi Fitness. Updated daily.</footer>
+<footer>Fitness data pulled directly from Mi Fitness. Glucose data imported manually from Libre exports.</footer>
 
 <div class="modal-backdrop" id="modalBackdrop">
   <div class="modal">
@@ -372,7 +396,10 @@
 // ---------- state ----------
 let allData = [];
 let dataByDate = new Map();
-let stepsChart, sleepChart, heartRateChart, intensityChart, standingChart;
+let glucoseDaily = [];
+let glucoseByDate = new Map();
+
+let stepsChart, sleepChart, heartRateChart, intensityChart, standingChart, glucoseTrendChart, glucoseIntradayChart;
 
 let rangeMode = 'preset';      // 'preset' | 'day' | 'month'
 let currentRangeDays = 30;     // used when rangeMode === 'preset'
@@ -381,7 +408,7 @@ let selectedDate = null;       // used when rangeMode === 'day'
 let selectedMonth = null;      // {year, month(1-12)} used when rangeMode === 'month'
 let compareEnabled = false;
 
-let clickTargets = []; // day objects (or null) aligned to current chart labels, for click-to-detail
+let clickTargets = []; // fitness day objects (or null) aligned to current chart labels
 
 // ---------- small helpers ----------
 function fmtDate(iso) {
@@ -430,10 +457,7 @@ function monthLabel(year, month) {
   return new Date(year, month - 1, 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
 }
 
-function dayByDate(dateStr) {
-  return dataByDate.get(dateStr) || null;
-}
-
+// Fitness-data metrics (from the Mi Fitness pipeline, looked up by date)
 function getMetricValue(day, key) {
   if (!day) return null;
   switch (key) {
@@ -445,6 +469,18 @@ function getMetricValue(day, key) {
     default: return null;
   }
 }
+
+// Unified lookup across BOTH data sources (fitness + glucose), keyed by date
+// string. This is the one place that knows which store a metric lives in --
+// everything else just deals in metric keys and dates.
+function getValueForDate(dateStr, key) {
+  if (!dateStr) return null;
+  if (key === 'glucose_avg') return glucoseByDate.get(dateStr)?.avg_mmol ?? null;
+  if (key === 'glucose_range_pct') return glucoseByDate.get(dateStr)?.pct_in_range ?? null;
+  return getMetricValue(dataByDate.get(dateStr) || null, key);
+}
+
+const METRIC_KEYS = ['steps', 'sleep_total', 'hr_avg', 'intensity', 'standing', 'glucose_avg', 'glucose_range_pct'];
 
 // ---------- value label plugin (draws the number above each bar/point) ----------
 const valueLabelsPlugin = {
@@ -475,93 +511,54 @@ const valueLabelsPlugin = {
 };
 Chart.register(valueLabelsPlugin);
 
-// ---------- building the series for whatever mode is active ----------
-function buildSeries() {
-  const metricKeys = ['steps', 'sleep_total', 'hr_avg', 'intensity', 'standing'];
-
-  function extract(day) {
-    const o = {};
-    metricKeys.forEach(k => (o[k] = getMetricValue(day, k)));
-    return o;
-  }
-
-  function pushInto(target, day) {
-    const vals = extract(day);
-    metricKeys.forEach(k => {
-      if (!target[k]) target[k] = [];
-      target[k].push(vals[k]);
-    });
-  }
-
-  let labels = [];
-  let current = {};
-  let previous = null;
-  let targets = []; // day objects aligned with labels, for click handling
-
+// ---------- date lists for whichever mode is active ----------
+function dateListForMode() {
   if (rangeMode === 'day') {
-    const day = dayByDate(selectedDate);
-    labels = [fmtFullDate(selectedDate)];
-    pushInto(current, day);
-    targets = [day];
-
-    if (compareEnabled) {
-      const prevDate = addDays(selectedDate, -1);
-      const prevDay = dayByDate(prevDate);
-      labels = [fmtDate(prevDate), fmtDate(selectedDate)];
-      current = {}; previous = {};
-      metricKeys.forEach(k => {
-        current[k] = [null, getMetricValue(day, k)];
-        previous[k] = [getMetricValue(prevDay, k), null];
-      });
-      targets = [prevDay, day];
+    if (!compareEnabled) {
+      return { labels: [fmtFullDate(selectedDate)], dateList: [selectedDate], prevDateList: null };
     }
-  } else if (rangeMode === 'month') {
+    const prevDate = addDays(selectedDate, -1);
+    return {
+      labels: [fmtDate(prevDate), fmtDate(selectedDate)],
+      dateList: [null, selectedDate],
+      prevDateList: [prevDate, null],
+    };
+  }
+
+  if (rangeMode === 'month') {
     const { year, month } = selectedMonth;
     const dim = daysInMonth(year, month);
-    labels = Array.from({ length: dim }, (_, i) => String(i + 1));
-    targets = [];
-    for (let d = 1; d <= dim; d++) {
-      const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-      const day = dayByDate(dateStr);
-      pushInto(current, day);
-      targets.push(day);
-    }
-
+    const labels = Array.from({ length: dim }, (_, i) => String(i + 1));
+    const dateList = Array.from({ length: dim }, (_, i) =>
+      `${year}-${String(month).padStart(2, '0')}-${String(i + 1).padStart(2, '0')}`
+    );
+    let prevDateList = null;
     if (compareEnabled) {
       let py = year, pm = month - 1;
       if (pm < 1) { pm = 12; py -= 1; }
       const pdim = daysInMonth(py, pm);
-      previous = {};
-      for (let d = 1; d <= dim; d++) {
-        if (d <= pdim) {
-          const dateStr = `${py}-${String(pm).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-          pushInto(previous, dayByDate(dateStr));
-        } else {
-          pushInto(previous, null);
-        }
-      }
+      prevDateList = Array.from({ length: dim }, (_, i) =>
+        i < pdim ? `${py}-${String(pm).padStart(2, '0')}-${String(i + 1).padStart(2, '0')}` : null
+      );
     }
-  } else {
-    // preset
-    const filtered = getPresetWindow();
-    labels = filtered.map(d => fmtDate(d.date));
-    targets = filtered.slice();
-    filtered.forEach(d => pushInto(current, d));
-
-    if (compareEnabled && currentRangeDays > 0) {
-      const end = windowEndIndex === null ? allData.length : windowEndIndex;
-      const start = Math.max(0, end - currentRangeDays);
-      const prevEnd = start;
-      const prevStart = Math.max(0, prevEnd - currentRangeDays);
-      const prevSlice = allData.slice(prevStart, prevEnd);
-      const padCount = currentRangeDays - prevSlice.length;
-      previous = {};
-      for (let i = 0; i < padCount; i++) pushInto(previous, null);
-      prevSlice.forEach(d => pushInto(previous, d));
-    }
+    return { labels, dateList, prevDateList };
   }
 
-  return { labels, current, previous, targets };
+  // preset
+  const filtered = getPresetWindow();
+  const labels = filtered.map(d => fmtDate(d.date));
+  const dateList = filtered.map(d => d.date);
+  let prevDateList = null;
+  if (compareEnabled && currentRangeDays > 0) {
+    const end = windowEndIndex === null ? allData.length : windowEndIndex;
+    const start = Math.max(0, end - currentRangeDays);
+    const prevEnd = start;
+    const prevStart = Math.max(0, prevEnd - currentRangeDays);
+    const prevSlice = allData.slice(prevStart, prevEnd);
+    const padCount = Math.max(0, dateList.length - prevSlice.length);
+    prevDateList = [...Array(padCount).fill(null), ...prevSlice.map(d => d.date)];
+  }
+  return { labels, dateList, prevDateList };
 }
 
 function getPresetWindow() {
@@ -572,7 +569,24 @@ function getPresetWindow() {
   return allData.slice(start, windowEndIndex);
 }
 
-// ---------- day detail modal ----------
+function buildSeries() {
+  const { labels, dateList, prevDateList } = dateListForMode();
+
+  const current = {};
+  METRIC_KEYS.forEach(k => (current[k] = dateList.map(d => getValueForDate(d, k))));
+
+  let previous = null;
+  if (prevDateList) {
+    previous = {};
+    METRIC_KEYS.forEach(k => (previous[k] = prevDateList.map(d => getValueForDate(d, k))));
+  }
+
+  const targets = dateList.map(d => (d ? dataByDate.get(d) || null : null));
+
+  return { labels, current, previous, targets };
+}
+
+// ---------- day detail modal (fitness data only) ----------
 function showDayDetail(day) {
   if (!day) return;
   const raw = day.raw || {};
@@ -612,6 +626,14 @@ function showDayDetail(day) {
     html += row('Range', hr.min_hr && hr.max_hr ? `${hr.min_hr}\u2013${hr.max_hr} bpm` : null);
   } else {
     html += '<div class="empty-metric">No heart rate data for this day</div>';
+  }
+
+  const g = glucoseByDate.get(day.date);
+  if (g) {
+    html += '<div class="section-title">Glucose</div>';
+    html += row('Average', `${g.avg_mmol} mmol/L`);
+    html += row('Range', `${g.min_mmol}\u2013${g.max_mmol} mmol/L`);
+    html += row('Time in range', `${g.pct_in_range}%`);
   }
 
   if (stress || spo2) {
@@ -712,6 +734,93 @@ function setActiveButton(el) {
   if (el) el.classList.add('active');
 }
 
+// ---------- glucose intraday chart (Day mode only) ----------
+async function renderGlucoseIntraday() {
+  const panel = document.getElementById('glucoseIntradayPanel');
+
+  if (rangeMode !== 'day') {
+    panel.style.display = 'none';
+    return;
+  }
+
+  let readings = [];
+  try {
+    const res = await fetch(`/api/glucose?date=${selectedDate}`, { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      readings = data.readings || [];
+    }
+  } catch (e) {
+    // glucose is optional -- fail quietly
+  }
+
+  if (!readings.length) {
+    panel.style.display = 'none';
+    return;
+  }
+
+  panel.style.display = '';
+  const labels = readings.map(r => {
+    const d = new Date(r.timestamp);
+    return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+  });
+  const values = readings.map(r => r.value);
+  const lowLine = values.map(() => 3.9);
+  const highLine = values.map(() => 10.0);
+
+  if (glucoseIntradayChart) glucoseIntradayChart.destroy();
+  const ctx = document.getElementById('glucoseIntradayChart').getContext('2d');
+  glucoseIntradayChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Low threshold',
+          data: lowLine,
+          borderColor: getComputedStyle(document.documentElement).getPropertyValue('--glucose-low'),
+          borderDash: [4, 4],
+          pointRadius: 0,
+          borderWidth: 1,
+        },
+        {
+          label: 'High threshold',
+          data: highLine,
+          borderColor: getComputedStyle(document.documentElement).getPropertyValue('--glucose-high'),
+          borderDash: [4, 4],
+          pointRadius: 0,
+          borderWidth: 1,
+        },
+        {
+          label: 'Glucose',
+          data: values,
+          borderColor: getComputedStyle(document.documentElement).getPropertyValue('--glucose-color'),
+          backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--glucose-color-soft'),
+          fill: false,
+          tension: 0.25,
+          pointRadius: 1.5,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { maxTicksLimit: 12 },
+        },
+        y: {
+          title: { display: true, text: 'mmol/L' },
+          grid: { color: 'rgba(0,0,0,0.06)' },
+        },
+      },
+    },
+  });
+}
+
 // ---------- rendering ----------
 function render() {
   const { labels, current, previous, targets } = buildSeries();
@@ -721,6 +830,9 @@ function render() {
   const avgSteps = Math.round(average(current.steps || []));
   const avgSleep = average(current.sleep_total || []);
   const bestSteps = Math.max(0, ...(current.steps || []).filter(v => v !== null));
+  const avgGlucose = average((current.glucose_avg || []).filter(v => v !== null));
+  const avgTimeInRange = average((current.glucose_range_pct || []).filter(v => v !== null));
+  const hasGlucose = (current.glucose_avg || []).some(v => v !== null);
 
   document.getElementById('statsRow').innerHTML = `
     <div class="stat">
@@ -735,17 +847,28 @@ function render() {
       <div class="value">${bestSteps.toLocaleString()}</div>
       <div class="label">Best day (steps)</div>
     </div>
+    ${hasGlucose ? `
+    <div class="stat">
+      <div class="value">${avgGlucose.toFixed(1)}</div>
+      <div class="label">Avg. glucose (mmol/L)</div>
+    </div>
+    <div class="stat">
+      <div class="value">${Math.round(avgTimeInRange)}%</div>
+      <div class="label">Time in range</div>
+    </div>
+    ` : ''}
     <div class="stat">
       <div class="value">${labels.length}</div>
       <div class="label">${rangeMode === 'day' ? (compareEnabled ? 'Days shown' : 'Day shown') : 'Days shown'}</div>
     </div>
   `;
 
-  [stepsChart, sleepChart, heartRateChart, intensityChart, standingChart].forEach(c => c && c.destroy());
+  document.getElementById('glucoseTrendPanel').classList.toggle('hidden', !hasGlucose);
 
-  const isNight = false; // panel backgrounds are per-canvas via CSS class, ticks use fixed colors below
+  [stepsChart, sleepChart, heartRateChart, intensityChart, standingChart, glucoseTrendChart]
+    .forEach(c => c && c.destroy());
 
-  function buildBarDatasets(metricKey, colorVar, softVar, label, valueFormatter) {
+  function buildBarDatasets(metricKey, colorVar, softVar, label) {
     const datasets = [{
       label,
       data: current[metricKey],
@@ -917,6 +1040,49 @@ function render() {
       }
     }
   });
+
+  // Glucose trend (only meaningful once glucose data has been imported)
+  if (hasGlucose) {
+    const glucoseCtx = document.getElementById('glucoseTrendChart').getContext('2d');
+    const glucoseDatasets = [{
+      label: 'Avg. glucose',
+      data: current.glucose_avg,
+      borderColor: getComputedStyle(document.documentElement).getPropertyValue('--glucose-color'),
+      backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--glucose-color'),
+      valueLabelColor: getComputedStyle(document.documentElement).getPropertyValue('--glucose-color'),
+      tension: 0.3,
+      pointRadius: 3
+    }];
+    if (previous) {
+      glucoseDatasets.unshift({
+        label: 'Avg. glucose (previous)',
+        data: previous.glucose_avg,
+        borderColor: getComputedStyle(document.documentElement).getPropertyValue('--prev-border'),
+        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--prev-border'),
+        borderDash: [4, 4],
+        tension: 0.3,
+        pointRadius: 3,
+        hideValueLabel: true
+      });
+    }
+    glucoseTrendChart = new Chart(glucoseCtx, {
+      type: 'line',
+      data: { labels, datasets: glucoseDatasets },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: !!previous, position: 'top', align: 'end', labels: { boxWidth: 12, font: { size: 12 } } },
+          valueLabels: { enabled: true, formatter: v => v.toFixed(1) }
+        },
+        scales: {
+          x: { grid: { display: false } },
+          y: { title: { display: true, text: 'mmol/L' }, grid: { color: 'rgba(0,0,0,0.06)' } }
+        }
+      }
+    });
+  }
+
+  renderGlucoseIntraday();
 }
 
 // ---------- init ----------
@@ -941,6 +1107,17 @@ async function init() {
   }
 
   dataByDate = new Map(allData.map(d => [d.date, d]));
+
+  try {
+    const gRes = await fetch('/api/glucose', { cache: 'no-store' });
+    if (gRes.ok) {
+      const gData = await gRes.json();
+      glucoseDaily = gData.daily || [];
+      glucoseByDate = new Map(glucoseDaily.map(d => [d.date, d]));
+    }
+  } catch (e) {
+    // glucose is entirely optional -- dashboard works fine without it
+  }
 
   render();
 
