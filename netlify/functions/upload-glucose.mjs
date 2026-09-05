@@ -142,7 +142,16 @@ export default async (req) => {
   const mergedArr = Object.values(merged).sort((a, b) => a.timestamp.localeCompare(b.timestamp));
 
   await store.setJSON("readings", mergedArr);
-  await store.setJSON("daily", computeDailyAggregates(merged));
+
+  // Merge computed aggregates with any existing daily entries -- this
+  // preserves manually-entered days that have no backing readings
+  // (only a real upload covering that specific date overwrites one).
+  const computed = computeDailyAggregates(merged);
+  const existingDaily = (await store.get("daily", { type: "json" })) || [];
+  const computedDates = new Set(computed.map((d) => d.date));
+  const preserved = existingDaily.filter((d) => !computedDates.has(d.date));
+  const finalDaily = [...preserved, ...computed].sort((a, b) => a.date.localeCompare(b.date));
+  await store.setJSON("daily", finalDaily);
 
   return new Response(
     JSON.stringify({ ok: true, imported: importedCount, total_readings: mergedArr.length }),
