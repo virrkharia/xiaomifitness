@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Steps &amp; sleep</title>
+<title>Virr's Xiaomi Steps &amp; sleep</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -19,12 +19,6 @@
     --sleep-color: #8D7BC7;
     --sleep-deep: #5B4B8A;
     --sleep-light: #B7A8E8;
-    --hr-color: #B85C6B;
-    --rhr-color: #D9A0A8;
-    --intensity-color: #4E8C82;
-    --intensity-color-soft: rgba(78, 140, 130, 0.18);
-    --stand-color: #8A9A5B;
-    --stand-color-soft: rgba(138, 154, 91, 0.18);
     --line: rgba(34, 38, 47, 0.12);
     --card-bg: rgba(255, 255, 255, 0.55);
   }
@@ -35,7 +29,7 @@
     margin: 0;
     font-family: 'Inter', sans-serif;
     color: var(--ink);
-    background: var(--day-bg);
+    background: linear-gradient(180deg, var(--day-bg) 0%, var(--day-bg) 46%, var(--night-bg) 46%, var(--night-bg) 100%);
     min-height: 100vh;
   }
 
@@ -146,7 +140,7 @@
   }
 
   .panel.night {
-    background: var(--night-bg);
+    background: rgba(255,255,255,0.06);
     border-color: rgba(255,255,255,0.14);
     color: #EDEBF6;
   }
@@ -248,7 +242,7 @@
 <body>
 
 <header>
-  <h1>Steps &amp; sleep</h1>
+  <h1>Virr's Steps &amp; sleep</h1>
   <p class="subtitle">A running record of daily activity and sleep, pulled automatically each morning.</p>
   <p class="subtitle" style="margin-top: 6px;"><a href="/upload.html" style="color: inherit;">Import data manually &rarr;</a></p>
 </header>
@@ -272,21 +266,6 @@
     <p class="hint">Deep and light sleep, hours per night &middot; click a bar for detail</p>
     <canvas id="sleepChart"></canvas>
   </div>
-  <div class="panel">
-    <h2>Heart rate</h2>
-    <p class="hint">Average and resting heart rate &middot; click a point for detail</p>
-    <canvas id="heartRateChart"></canvas>
-  </div>
-  <div class="panel">
-    <h2>Intensity</h2>
-    <p class="hint">Minutes of elevated activity per day</p>
-    <canvas id="intensityChart"></canvas>
-  </div>
-  <div class="panel">
-    <h2>Standing</h2>
-    <p class="hint">Hours with at least one stand per day</p>
-    <canvas id="standingChart"></canvas>
-  </div>
 </main>
 
 <footer>Data pulled directly from Mi Fitness. Updated daily.</footer>
@@ -301,7 +280,7 @@
 
 <script>
 let allData = [];
-let stepsChart, sleepChart, heartRateChart, intensityChart, standingChart;
+let stepsChart, sleepChart;
 
 function fmtDate(iso) {
   const d = new Date(iso + 'T00:00:00');
@@ -429,9 +408,6 @@ function render(days) {
 
   if (stepsChart) stepsChart.destroy();
   if (sleepChart) sleepChart.destroy();
-  if (heartRateChart) heartRateChart.destroy();
-  if (intensityChart) intensityChart.destroy();
-  if (standingChart) standingChart.destroy();
 
   const stepsCtx = document.getElementById('stepsChart').getContext('2d');
   stepsChart = new Chart(stepsCtx, {
@@ -506,106 +482,6 @@ function render(days) {
           grid: { color: 'rgba(255,255,255,0.08)' },
           ticks: { color: '#B7BAD1' }
         }
-      }
-    }
-  });
-
-  const avgHr = filtered.map(d => d.raw?.heart_rate?.avg_hr ?? null);
-  const restingHr = filtered.map(d => d.raw?.heart_rate?.avg_rhr ?? null);
-  const intensityMin = filtered.map(d => d.raw?.intensity?.duration ?? null);
-  const standHours = filtered.map(d => d.raw?.valid_stand?.count ?? null);
-
-  const heartRateCtx = document.getElementById('heartRateChart').getContext('2d');
-  heartRateChart = new Chart(heartRateCtx, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [
-        {
-          label: 'Average',
-          data: avgHr,
-          borderColor: getComputedStyle(document.documentElement).getPropertyValue('--hr-color'),
-          backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--hr-color'),
-          tension: 0.3,
-          pointRadius: 3
-        },
-        {
-          label: 'Resting',
-          data: restingHr,
-          borderColor: getComputedStyle(document.documentElement).getPropertyValue('--rhr-color'),
-          backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--rhr-color'),
-          tension: 0.3,
-          pointRadius: 3
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      onClick: (evt, elements) => {
-        if (elements.length) showDayDetail(currentFiltered[elements[0].index]);
-      },
-      plugins: {
-        legend: { position: 'top', align: 'end', labels: { boxWidth: 12, font: { size: 12 } } }
-      },
-      scales: {
-        x: { grid: { display: false } },
-        y: { title: { display: true, text: 'bpm' }, grid: { color: 'rgba(0,0,0,0.06)' } }
-      }
-    }
-  });
-
-  const intensityCtx = document.getElementById('intensityChart').getContext('2d');
-  intensityChart = new Chart(intensityCtx, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [{
-        label: 'Intensity minutes',
-        data: intensityMin,
-        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--intensity-color-soft'),
-        borderColor: getComputedStyle(document.documentElement).getPropertyValue('--intensity-color'),
-        borderWidth: 1.5,
-        borderRadius: 4,
-        maxBarThickness: 28
-      }]
-    },
-    options: {
-      responsive: true,
-      onClick: (evt, elements) => {
-        if (elements.length) showDayDetail(currentFiltered[elements[0].index]);
-      },
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { grid: { display: false } },
-        y: { beginAtZero: true, title: { display: true, text: 'Minutes' }, grid: { color: 'rgba(0,0,0,0.06)' } }
-      }
-    }
-  });
-
-  const standingCtx = document.getElementById('standingChart').getContext('2d');
-  standingChart = new Chart(standingCtx, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [{
-        label: 'Standing hours',
-        data: standHours,
-        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--stand-color-soft'),
-        borderColor: getComputedStyle(document.documentElement).getPropertyValue('--stand-color'),
-        borderWidth: 1.5,
-        borderRadius: 4,
-        maxBarThickness: 28
-      }]
-    },
-    options: {
-      responsive: true,
-      onClick: (evt, elements) => {
-        if (elements.length) showDayDetail(currentFiltered[elements[0].index]);
-      },
-      plugins: { legend: { display: false } },
-      scales: {
-        x: { grid: { display: false } },
-        y: { beginAtZero: true, title: { display: true, text: 'Hours' }, grid: { color: 'rgba(0,0,0,0.06)' } }
       }
     }
   });
