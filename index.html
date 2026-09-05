@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Virr's Steps &amp; sleep</title>
+<title>Virr's Health Dashboard 2026</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -299,6 +299,18 @@
   }
   .habit-tick.done { background: var(--zone-hit); color: white; border-color: var(--zone-hit); }
 
+  .habit-manage-btn {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: white;
+    color: var(--ink-soft);
+    cursor: pointer;
+    margin: 0 2px;
+  }
+  .habit-manage-btn:hover { background: rgba(0,0,0,0.04); }
+
   .sleep-window-strip { display: flex; gap: 3px; margin-top: 10px; }
   .sleep-window-dot {
     flex: 1;
@@ -385,8 +397,8 @@
 <body>
 
 <header>
-  <h1>Steps &amp; sleep</h1>
-  <p class="subtitle">A running record of daily activity, sleep, and glucose, pulled automatically each morning.</p>
+  <h1>Virr's Health Dashboard 2026</h1>
+  <p class="subtitle">Activity, sleep, glucose, weekly targets, and daily habits, all in one place &mdash; synced automatically where possible, ticked off by hand where it can't be.</p>
   <div class="header-links">
     <a href="/upload.html">Import fitness data &rarr;</a>
     <a href="/glucose-upload.html">Import glucose data &rarr;</a>
@@ -396,8 +408,8 @@
 <div class="controls">
   <div class="range-picker" id="rangePicker">
     <button data-mode="day">Day</button>
-    <button data-mode="preset" data-days="7">7 days</button>
-    <button data-mode="preset" data-days="30" class="active">30 days</button>
+    <button data-mode="preset" data-days="7" class="active">7 days</button>
+    <button data-mode="preset" data-days="30">30 days</button>
     <button data-mode="preset" data-days="90">90 days</button>
     <button data-mode="preset" data-days="0">All time</button>
     <button data-mode="month" data-which="this">This Month</button>
@@ -526,7 +538,7 @@
       <input type="number" id="habitFreqCount" min="1" max="7" value="3">
     </label>
     <button id="addHabitBtn">Add habit</button>
-    <button id="loadStarterHabitsBtn" type="button">Load habits from my health plan</button>
+    <button id="loadStarterHabitsBtn" type="button" style="display:none;">Load habits from my health plan</button>
     <div class="status" id="habitStatus"></div>
     <div style="width:100%; overflow-x:auto;" id="habitsGridBody"></div>
   </div>
@@ -583,7 +595,7 @@ let glucoseByDate = new Map();
 let stepsChart, sleepChart, heartRateChart, intensityChart, standingChart, distanceChart, caloriesChart, glucoseTrendChart, glucoseIntradayChart;
 
 let rangeMode = 'preset';      // 'preset' | 'day' | 'month'
-let currentRangeDays = 30;     // used when rangeMode === 'preset'
+let currentRangeDays = 7;      // used when rangeMode === 'preset'
 let windowEndDate = null;      // calendar date string; anchor for preset windowing
 let selectedDate = null;       // used when rangeMode === 'day'
 let selectedMonth = null;      // {year, month(1-12)} used when rangeMode === 'month'
@@ -1071,7 +1083,7 @@ async function loadStarterHabits() {
 function renderHabitTable(habits, labels, dateList) {
   let html = '<table class="habits-table"><thead><tr><th>Habit</th>';
   labels.forEach(l => { html += `<th>${l}</th>`; });
-  html += '<th>Adherence</th></tr></thead><tbody>';
+  html += '<th>Adherence</th><th>Manage</th></tr></thead><tbody>';
 
   habits.forEach(h => {
     html += `<tr><td>${h.name}</td>`;
@@ -1084,29 +1096,54 @@ function renderHabitTable(habits, labels, dateList) {
       html += `<td><button class="habit-tick ${done ? 'done' : ''}" data-habit="${h.id}" data-date="${d}">${done ? '&#10003;' : ''}</button></td>`;
     });
     const freqNote = h.frequency?.type === 'weekly' ? ` (target ${h.frequency.count}/wk)` : '';
-    html += `<td>${hitCount}/${totalCount}${freqNote}</td></tr>`;
+    html += `<td>${hitCount}/${totalCount}${freqNote}</td>`;
+    html += `<td>
+      <button class="habit-manage-btn" data-action="deactivate" data-habit="${h.id}" title="Mark inactive">Pause</button>
+      <button class="habit-manage-btn" data-action="delete" data-habit="${h.id}" title="Delete permanently">Delete</button>
+    </td></tr>`;
   });
 
   html += '</tbody></table>';
   return html;
 }
 
+function renderInactiveHabitsList() {
+  const inactive = habitDefinitions.filter(h => h.active === false);
+  if (!inactive.length) return '';
+
+  let html = '<div class="habit-category-title">Inactive habits</div><ul style="padding-left:18px; font-size:13px;">';
+  inactive.forEach(h => {
+    html += `<li style="margin-bottom:6px;">${h.name}
+      <button class="habit-manage-btn" data-action="reactivate" data-habit="${h.id}">Reactivate</button>
+      <button class="habit-manage-btn" data-action="delete" data-habit="${h.id}">Delete</button>
+    </li>`;
+  });
+  html += '</ul>';
+  return html;
+}
+
 function renderHabitsGrid(labels, dateList) {
   const container = document.getElementById('habitsGridBody');
   const active = habitDefinitions.filter(h => h.active !== false);
+  const inactiveHtml = renderInactiveHabitsList();
 
-  if (!active.length) {
+  if (!active.length && !inactiveHtml) {
     container.innerHTML = '<p class="hint">No habits yet -- add one above.</p>';
     return;
   }
 
   let html = '';
-  HABIT_CATEGORIES.forEach(cat => {
-    const inCategory = active.filter(h => (h.category || 'other') === cat.id);
-    if (!inCategory.length) return;
-    html += `<div class="habit-category-title">${cat.label}</div>`;
-    html += renderHabitTable(inCategory, labels, dateList);
-  });
+  if (!active.length) {
+    html += '<p class="hint">No active habits.</p>';
+  } else {
+    HABIT_CATEGORIES.forEach(cat => {
+      const inCategory = active.filter(h => (h.category || 'other') === cat.id);
+      if (!inCategory.length) return;
+      html += `<div class="habit-category-title">${cat.label}</div>`;
+      html += renderHabitTable(inCategory, labels, dateList);
+    });
+  }
+  html += inactiveHtml;
 
   container.innerHTML = html;
 
@@ -1129,6 +1166,46 @@ function renderHabitsGrid(labels, dateList) {
       renderHabitsGrid(labels, dateList);
     });
   });
+
+  container.querySelectorAll('.habit-manage-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.habit;
+      const action = btn.dataset.action;
+      btn.disabled = true;
+
+      try {
+        if (action === 'delete') {
+          if (!confirm('Delete this habit permanently? This cannot be undone.')) { btn.disabled = false; return; }
+          await fetch('/api/habits', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'delete', id }),
+          });
+          habitDefinitions = habitDefinitions.filter(h => h.id !== id);
+        } else if (action === 'deactivate') {
+          await fetch('/api/habits', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'update', id, active: false }),
+          });
+          const h = habitDefinitions.find(h => h.id === id);
+          if (h) h.active = false;
+        } else if (action === 'reactivate') {
+          await fetch('/api/habits', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'update', id, active: true }),
+          });
+          const h = habitDefinitions.find(h => h.id === id);
+          if (h) h.active = true;
+        }
+      } catch (e) {}
+
+      renderHabitsGrid(labels, dateList);
+    });
+  });
+
+  // Default to showing the most recent days rather than the start of
+  // whatever range is selected -- the habit grid shares horizontal scroll
+  // across all its tables since they share the same date columns.
+  container.scrollLeft = container.scrollWidth;
 }
 
 // ---------- glucose intraday chart (Day mode only) ----------
