@@ -1,0 +1,305 @@
+[
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1785456000,
+    "value": "{\"goal_items\":[{\"achieved_value\":752,\"target_value\":900,\"field\":2},{\"achieved_value\":2045,\"target_value\":6000,\"field\":1},{\"achieved_value\":0,\"target_value\":30,\"field\":4}],\"sidList\":[\"953441174\"],\"date_time\":1785456000,\"timeInZero\":1785456000}",
+    "update_time": 1785830540,
+    "watermark": 166668365987845,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1785628800,
+    "value": "{\"goal_items\":[{\"achieved_value\":1423,\"target_value\":900,\"field\":2},{\"achieved_value\":5737,\"target_value\":6000,\"field\":1},{\"achieved_value\":23,\"target_value\":30,\"field\":4}],\"sidList\":[\"953441174\"],\"date_time\":1785628800,\"timeInZero\":1785628800}",
+    "update_time": 1785830542,
+    "watermark": 166668368085026,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1785715200,
+    "value": "{\"goal_items\":[{\"achieved_value\":1019,\"target_value\":900,\"field\":2},{\"achieved_value\":5647,\"target_value\":6000,\"field\":1},{\"achieved_value\":23,\"target_value\":30,\"field\":4}],\"date_time\":1785715200,\"timeInZero\":1785715200}",
+    "update_time": 1785830544,
+    "watermark": 166668370182260
+  },
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1785542400,
+    "value": "{\"goal_items\":[{\"achieved_value\":1253,\"target_value\":900,\"field\":2},{\"achieved_value\":6006,\"target_value\":6000,\"field\":1},{\"achieved_value\":22,\"target_value\":30,\"field\":4}],\"date_time\":1785542400,\"timeInZero\":1785542400}",
+    "update_time": 1785830544,
+    "watermark": 166668370182261
+  },
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1785801600,
+    "value": "{\"goal_items\":[{\"achieved_value\":1364,\"target_value\":900,\"field\":2},{\"achieved_value\":7762,\"target_value\":6000,\"field\":1},{\"achieved_value\":42,\"target_value\":30,\"field\":4}],\"sidList\":[\"953441174\"],\"date_time\":1785801600,\"timeInZero\":1785801600}",
+    "update_time": 1785917006,
+    "watermark": 166759032160282
+  },
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1785888000,
+    "value": "{\"goal_items\":[{\"achieved_value\":947,\"target_value\":900,\"field\":2},{\"achieved_value\":5818,\"target_value\":6000,\"field\":1},{\"achieved_value\":28,\"target_value\":30,\"field\":4}],\"sidList\":[\"953441174\"],\"date_time\":1785888000,\"timeInZero\":1785888000}",
+    "update_time": 1785970802,
+    "watermark": 166815441354777
+  },
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1786147200,
+    "value": "{\"goal_items\":[{\"achieved_value\":1541,\"target_value\":900,\"field\":2},{\"achieved_value\":7229,\"target_value\":6000,\"field\":1},{\"achieved_value\":32,\"target_value\":30,\"field\":4}],\"sidList\":[\"953441174\"],\"date_time\":1786147200,\"timeInZero\":1786147200}",
+    "update_time": 1786255673,
+    "watermark": 167114150248523
+  },
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1786060800,
+    "value": "{\"goal_items\":[{\"achieved_value\":1382,\"target_value\":900,\"field\":2},{\"achieved_value\":9495,\"target_value\":6000,\"field\":1},{\"achieved_value\":60,\"target_value\":30,\"field\":4}],\"sidList\":[\"953441174\"],\"date_time\":1786060800,\"timeInZero\":1786060800}",
+    "update_time": 1786255673,
+    "watermark": 167114150248524
+  },
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1785974400,
+    "value": "{\"goal_items\":[{\"achieved_value\":872,\"target_value\":900,\"field\":2},{\"achieved_value\":2664,\"target_value\":6000,\"field\":1},{\"achieved_value\":2,\"target_value\":30,\"field\":4}],\"sidList\":[\"953441174\"],\"date_time\":1785974400,\"timeInZero\":1785974400}",
+    "update_time": 1786255673,
+    "watermark": 167114150248525
+  },
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1786233600,
+    "value": "{\"goal_items\":[{\"achieved_value\":1256,\"target_value\":900,\"field\":2},{\"achieved_value\":4739,\"target_value\":6000,\"field\":1},{\"achieved_value\":19,\"target_value\":30,\"field\":4}],\"sidList\":[\"953441174\"],\"date_time\":1786233600,\"timeInZero\":1786233600}",
+    "update_time": 1786363280,
+    "watermark": 167226984366095
+  },
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1786579200,
+    "value": "{\"goal_items\":[{\"achieved_value\":171,\"target_value\":900,\"field\":2},{\"achieved_value\":431,\"target_value\":6000,\"field\":1},{\"achieved_value\":0,\"target_value\":30,\"field\":4}],\"sidList\":[\"953441174\"],\"date_time\":1786579200,\"timeInZero\":1786579200}",
+    "update_time": 1787050036,
+    "watermark": 167947100225539
+  },
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1786492800,
+    "value": "{\"goal_items\":[{\"achieved_value\":826,\"target_value\":900,\"field\":2},{\"achieved_value\":2991,\"target_value\":6000,\"field\":1},{\"achieved_value\":7,\"target_value\":30,\"field\":4}],\"sidList\":[\"953441174\"],\"date_time\":1786492800,\"timeInZero\":1786492800}",
+    "update_time": 1787050040,
+    "watermark": 167947104419901
+  },
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1786406400,
+    "value": "{\"goal_items\":[{\"achieved_value\":670,\"target_value\":900,\"field\":2},{\"achieved_value\":1287,\"target_value\":6000,\"field\":1},{\"achieved_value\":0,\"target_value\":30,\"field\":4}],\"sidList\":[\"953441174\"],\"date_time\":1786406400,\"timeInZero\":1786406400}",
+    "update_time": 1787050040,
+    "watermark": 167947104419902
+  },
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1786320000,
+    "value": "{\"goal_items\":[{\"achieved_value\":988,\"target_value\":900,\"field\":2},{\"achieved_value\":7300,\"target_value\":6000,\"field\":1},{\"achieved_value\":25,\"target_value\":30,\"field\":4}],\"sidList\":[\"953441174\"],\"date_time\":1786320000,\"timeInZero\":1786320000}",
+    "update_time": 1787050040,
+    "watermark": 167947104419903
+  },
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1787011200,
+    "value": "{\"goal_items\":[{\"achieved_value\":84,\"target_value\":900,\"field\":2},{\"achieved_value\":390,\"target_value\":6000,\"field\":1},{\"achieved_value\":1,\"target_value\":30,\"field\":4}],\"sidList\":[\"953441174\"],\"date_time\":1787011200,\"timeInZero\":1787011200}",
+    "update_time": 1787144558,
+    "watermark": 168046213726215
+  },
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1787097600,
+    "value": "{\"goal_items\":[{\"achieved_value\":477,\"target_value\":900,\"field\":2},{\"achieved_value\":1764,\"target_value\":6000,\"field\":1},{\"achieved_value\":3,\"target_value\":30,\"field\":4}],\"sidList\":[\"953441174\"],\"date_time\":1787097600,\"timeInZero\":1787097600}",
+    "update_time": 1787236985,
+    "watermark": 168143130460163
+  },
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1787184000,
+    "value": "{\"goal_items\":[{\"achieved_value\":1106,\"target_value\":900,\"field\":2},{\"achieved_value\":7132,\"target_value\":6000,\"field\":1},{\"achieved_value\":28,\"target_value\":30,\"field\":4}],\"sidList\":[\"953441174\"],\"date_time\":1787184000,\"timeInZero\":1787184000}",
+    "update_time": 1787300747,
+    "watermark": 168209989763086
+  },
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1787270400,
+    "value": "{\"goal_items\":[{\"achieved_value\":928,\"target_value\":900,\"field\":2},{\"achieved_value\":4465,\"target_value\":6000,\"field\":1},{\"achieved_value\":8,\"target_value\":30,\"field\":4}],\"sidList\":[\"953441174\"],\"date_time\":1787270400,\"timeInZero\":1787270400}",
+    "update_time": 1787564498,
+    "watermark": 168486552731673
+  },
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1787443200,
+    "value": "{\"goal_items\":[{\"achieved_value\":389,\"target_value\":900,\"field\":2},{\"achieved_value\":1475,\"target_value\":6000,\"field\":1},{\"achieved_value\":1,\"target_value\":30,\"field\":4}],\"sidList\":[\"953441174\"],\"date_time\":1787443200,\"timeInZero\":1787443200}",
+    "update_time": 1787564499,
+    "watermark": 168486553780271
+  },
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1787356800,
+    "value": "{\"goal_items\":[{\"achieved_value\":1203,\"target_value\":900,\"field\":2},{\"achieved_value\":7265,\"target_value\":6000,\"field\":1},{\"achieved_value\":47,\"target_value\":30,\"field\":4}],\"sidList\":[\"953441174\"],\"date_time\":1787356800,\"timeInZero\":1787356800}",
+    "update_time": 1787564499,
+    "watermark": 168486553780272
+  },
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1787616000,
+    "value": "{\"goal_items\":[{\"achieved_value\":1061,\"target_value\":900,\"field\":2},{\"achieved_value\":8589,\"target_value\":6000,\"field\":1},{\"achieved_value\":49,\"target_value\":30,\"field\":4}],\"sidList\":[\"953441174\"],\"date_time\":1787616000,\"timeInZero\":1787616000}",
+    "update_time": 1787732398,
+    "watermark": 168662608642085
+  },
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1788134400,
+    "value": "{\"goal_items\":[{\"achieved_value\":1397,\"target_value\":900,\"field\":2},{\"achieved_value\":5095,\"target_value\":6000,\"field\":1},{\"achieved_value\":15,\"target_value\":30,\"field\":4}],\"sidList\":[\"953441174\"],\"date_time\":1788134400,\"timeInZero\":1788134400}",
+    "update_time": 1788218497,
+    "watermark": 169172320387123
+  },
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1788048000,
+    "value": "{\"goal_items\":[{\"achieved_value\":1388,\"target_value\":900,\"field\":2},{\"achieved_value\":8465,\"target_value\":6000,\"field\":1},{\"achieved_value\":34,\"target_value\":30,\"field\":4}],\"sidList\":[\"953441174\"],\"date_time\":1788048000,\"timeInZero\":1788048000}",
+    "update_time": 1788218497,
+    "watermark": 169172320387124
+  },
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1787961600,
+    "value": "{\"goal_items\":[{\"achieved_value\":1742,\"target_value\":900,\"field\":2},{\"achieved_value\":12782,\"target_value\":6000,\"field\":1},{\"achieved_value\":69,\"target_value\":30,\"field\":4}],\"sidList\":[\"953441174\"],\"date_time\":1787961600,\"timeInZero\":1787961600}",
+    "update_time": 1788218497,
+    "watermark": 169172320387125
+  },
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1787875200,
+    "value": "{\"goal_items\":[{\"achieved_value\":1007,\"target_value\":900,\"field\":2},{\"achieved_value\":8080,\"target_value\":6000,\"field\":1},{\"achieved_value\":48,\"target_value\":30,\"field\":4}],\"sidList\":[\"953441174\"],\"date_time\":1787875200,\"timeInZero\":1787875200}",
+    "update_time": 1788218497,
+    "watermark": 169172320387126
+  },
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1787788800,
+    "value": "{\"goal_items\":[{\"achieved_value\":865,\"target_value\":900,\"field\":2},{\"achieved_value\":4680,\"target_value\":6000,\"field\":1},{\"achieved_value\":15,\"target_value\":30,\"field\":4}],\"sidList\":[\"953441174\"],\"date_time\":1787788800,\"timeInZero\":1787788800}",
+    "update_time": 1788218497,
+    "watermark": 169172320387127
+  },
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1787702400,
+    "value": "{\"goal_items\":[{\"achieved_value\":892,\"target_value\":900,\"field\":2},{\"achieved_value\":2847,\"target_value\":6000,\"field\":1},{\"achieved_value\":6,\"target_value\":30,\"field\":4}],\"sidList\":[\"953441174\"],\"date_time\":1787702400,\"timeInZero\":1787702400}",
+    "update_time": 1788218497,
+    "watermark": 169172320387128
+  },
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1787529600,
+    "value": "{\"goal_items\":[{\"achieved_value\":1309,\"target_value\":900,\"field\":2},{\"achieved_value\":11059,\"target_value\":6000,\"field\":1},{\"achieved_value\":57,\"target_value\":30,\"field\":4}],\"sidList\":[\"953441174\"],\"date_time\":1787529600,\"timeInZero\":1787529600}",
+    "update_time": 1788227439,
+    "watermark": 169181696753883
+  },
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1788393600,
+    "value": "{\"goal_items\":[{\"achieved_value\":1520,\"target_value\":900,\"field\":2},{\"achieved_value\":14219,\"target_value\":6000,\"field\":1},{\"achieved_value\":79,\"target_value\":30,\"field\":4}],\"sidList\":[\"953441174\"],\"date_time\":1788393600,\"timeInZero\":1788393600}",
+    "update_time": 1788606104,
+    "watermark": 169578755784822
+  },
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1788566400,
+    "value": "{\"goal_items\":[{\"achieved_value\":544,\"target_value\":900,\"field\":2},{\"achieved_value\":5094,\"target_value\":6000,\"field\":1},{\"achieved_value\":35,\"target_value\":30,\"field\":4}],\"date_time\":1788566400,\"timeInZero\":1788566400}",
+    "update_time": 1788606105,
+    "watermark": 169578756833444
+  },
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1788480000,
+    "value": "{\"goal_items\":[{\"achieved_value\":1975,\"target_value\":900,\"field\":2},{\"achieved_value\":26284,\"target_value\":6000,\"field\":1},{\"achieved_value\":101,\"target_value\":30,\"field\":4}],\"sidList\":[\"953441174\"],\"date_time\":1788480000,\"timeInZero\":1788480000}",
+    "update_time": 1788606105,
+    "watermark": 169578756833445
+  },
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1788307200,
+    "value": "{\"goal_items\":[{\"achieved_value\":1094,\"target_value\":900,\"field\":2},{\"achieved_value\":8821,\"target_value\":6000,\"field\":1},{\"achieved_value\":65,\"target_value\":30,\"field\":4}],\"sidList\":[\"953441174\"],\"date_time\":1788307200,\"timeInZero\":1788307200}",
+    "update_time": 1788606105,
+    "watermark": 169578756833446
+  },
+  {
+    "sid": "default",
+    "tag": "daily_fitness",
+    "key": "goal",
+    "time": 1788220800,
+    "value": "{\"goal_items\":[{\"achieved_value\":1414,\"target_value\":900,\"field\":2},{\"achieved_value\":5946,\"target_value\":6000,\"field\":1},{\"achieved_value\":17,\"target_value\":30,\"field\":4}],\"sidList\":[\"953441174\"],\"date_time\":1788220800,\"timeInZero\":1788220800}",
+    "update_time": 1788606105,
+    "watermark": 169578756833447
+  }
+]

@@ -1,0 +1,1660 @@
+[
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "sleep",
+    "time": 1787529600,
+    "value": "{\"avg_hr\":72,\"avg_spo2\":0,\"day_sleep_evaluation\":0,\"segment_details\":[{\"bedtime\":1787551920,\"sleep_deep_duration\":0,\"duration\":48,\"sleep_light_duration\":0,\"timezone\":4,\"awake_count\":0,\"sleep_awake_duration\":0,\"wake_up_time\":1787554800},{\"avg_breath\":13,\"avg_hr\":72,\"bedtime\":1787532900,\"sleep_deep_duration\":82,\"duration\":251,\"sleep_light_duration\":113,\"max_hr\":86,\"min_hr\":52,\"sleep_rem_duration\":56,\"timezone\":4,\"awake_count\":0,\"sleep_awake_duration\":0,\"wake_up_time\":1787547960}],\"long_sleep_evaluation\":4,\"max_hr\":86,\"min_hr\":52,\"sleep_awake_duration\":0,\"sleep_deep_duration\":82,\"sleep_light_duration\":113,\"sleep_rem_duration\":56,\"sleep_score\":66,\"sleep_stage\":2,\"total_duration\":299}",
+    "update_time": 1788227449,
+    "watermark": 169181707239654,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "intensity",
+    "time": 1787443200,
+    "value": "{\"duration\":1}",
+    "update_time": 1788227468,
+    "watermark": 169181727162620,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "valid_stand",
+    "time": 1787443200,
+    "value": "{\"count\":12}",
+    "update_time": 1788227468,
+    "watermark": 169181727162622,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "sleep",
+    "time": 1787443200,
+    "value": "{\"avg_hr\":77,\"avg_spo2\":0,\"day_sleep_evaluation\":1,\"segment_details\":[{\"bedtime\":1787498760,\"sleep_deep_duration\":0,\"duration\":68,\"sleep_light_duration\":0,\"timezone\":4,\"awake_count\":0,\"sleep_awake_duration\":0,\"wake_up_time\":1787502840},{\"bedtime\":1787487960,\"sleep_deep_duration\":0,\"duration\":53,\"sleep_light_duration\":0,\"timezone\":4,\"awake_count\":0,\"sleep_awake_duration\":0,\"wake_up_time\":1787491140},{\"avg_breath\":14,\"avg_hr\":77,\"bedtime\":1787443800,\"sleep_deep_duration\":100,\"duration\":359,\"sleep_light_duration\":162,\"max_hr\":120,\"min_hr\":47,\"sleep_rem_duration\":97,\"timezone\":4,\"awake_count\":3,\"sleep_awake_duration\":74,\"wake_up_time\":1787469780}],\"long_sleep_evaluation\":18,\"max_hr\":120,\"min_hr\":47,\"sleep_awake_duration\":74,\"sleep_deep_duration\":100,\"sleep_light_duration\":162,\"sleep_rem_duration\":97,\"sleep_score\":54,\"sleep_stage\":2,\"total_duration\":480}",
+    "update_time": 1788227468,
+    "watermark": 169181727162624,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "steps",
+    "time": 1787443200,
+    "value": "{\"calories\":111,\"distance\":886,\"steps\":1475}",
+    "update_time": 1788227478,
+    "watermark": 169181737648386,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "calories",
+    "time": 1787443200,
+    "value": "{\"calories\":389}",
+    "update_time": 1788227478,
+    "watermark": 169181737648389,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "heart_rate",
+    "time": 1787443200,
+    "value": "{\"abnormal_hr_count\":0,\"aerobic_hr_zone_duration\":0,\"anaerobic_hr_zone_duration\":0,\"avg_hr\":79,\"avg_rhr\":65,\"extreme_hr_zone_duration\":0,\"fat_burning_hr_zone_duration\":1,\"latest_hr\":{\"bpm\":101,\"type\":0,\"time\":1787507940,\"dbKey\":\"heart_rate\",\"dbTime\":1787504340,\"sid\":\"953441174\"},\"max_hr\":120,\"min_hr\":47,\"warm_up_hr_zone_duration\":68}",
+    "update_time": 1788227478,
+    "watermark": 169181737648392,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "intensity",
+    "time": 1787356800,
+    "value": "{\"duration\":47}",
+    "update_time": 1788227478,
+    "watermark": 169181737648395,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "steps",
+    "time": 1787356800,
+    "value": "{\"calories\":553,\"distance\":4368,\"steps\":7265}",
+    "update_time": 1788227488,
+    "watermark": 169181748134161,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "calories",
+    "time": 1787356800,
+    "value": "{\"calories\":1203}",
+    "update_time": 1788227488,
+    "watermark": 169181748134164,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "heart_rate",
+    "time": 1787356800,
+    "value": "{\"abnormal_hr_count\":0,\"aerobic_hr_zone_duration\":0,\"anaerobic_hr_zone_duration\":0,\"avg_hr\":74,\"avg_rhr\":52,\"extreme_hr_zone_duration\":0,\"fat_burning_hr_zone_duration\":5,\"latest_hr\":{\"bpm\":87,\"type\":0,\"time\":1787442840,\"dbKey\":\"heart_rate\",\"dbTime\":1787439240,\"sid\":\"953441174\"},\"max_hr\":126,\"min_hr\":43,\"warm_up_hr_zone_duration\":62}",
+    "update_time": 1788227488,
+    "watermark": 169181748134167,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "intensity",
+    "time": 1787270400,
+    "value": "{\"duration\":8}",
+    "update_time": 1788227488,
+    "watermark": 169181748134170,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "valid_stand",
+    "time": 1787356800,
+    "value": "{\"count\":21}",
+    "update_time": 1788227488,
+    "watermark": 169181748134172,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "sleep",
+    "time": 1787356800,
+    "value": "{\"avg_hr\":65,\"avg_spo2\":0,\"day_sleep_evaluation\":0,\"segment_details\":[{\"avg_breath\":13,\"avg_hr\":65,\"bedtime\":1787368140,\"sleep_deep_duration\":65,\"duration\":192,\"sleep_light_duration\":88,\"max_hr\":126,\"min_hr\":43,\"sleep_rem_duration\":39,\"timezone\":4,\"awake_count\":2,\"sleep_awake_duration\":31,\"wake_up_time\":1787381520},{\"bedtime\":1787355000,\"sleep_deep_duration\":0,\"duration\":134,\"sleep_light_duration\":0,\"timezone\":4,\"awake_count\":0,\"sleep_awake_duration\":0,\"wake_up_time\":1787363040},{\"bedtime\":1787351220,\"sleep_deep_duration\":0,\"duration\":43,\"sleep_light_duration\":0,\"timezone\":4,\"awake_count\":0,\"sleep_awake_duration\":0,\"wake_up_time\":1787353800}],\"long_sleep_evaluation\":16,\"max_hr\":126,\"min_hr\":43,\"sleep_awake_duration\":31,\"sleep_deep_duration\":65,\"sleep_light_duration\":88,\"sleep_rem_duration\":39,\"sleep_score\":43,\"sleep_stage\":2,\"total_duration\":369}",
+    "update_time": 1788227488,
+    "watermark": 169181748134175,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "steps",
+    "time": 1787270400,
+    "value": "{\"calories\":395,\"distance\":2685,\"steps\":4465}",
+    "update_time": 1788227498,
+    "watermark": 169181758619937,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "calories",
+    "time": 1787270400,
+    "value": "{\"calories\":928}",
+    "update_time": 1788227498,
+    "watermark": 169181758619940,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "heart_rate",
+    "time": 1787270400,
+    "value": "{\"abnormal_hr_count\":0,\"aerobic_hr_zone_duration\":0,\"anaerobic_hr_zone_duration\":0,\"avg_hr\":78,\"avg_rhr\":55,\"extreme_hr_zone_duration\":0,\"fat_burning_hr_zone_duration\":2,\"latest_hr\":{\"bpm\":74,\"type\":0,\"time\":1787356740,\"dbKey\":\"heart_rate\",\"dbTime\":1787353140,\"sid\":\"953441174\"},\"max_hr\":119,\"min_hr\":49,\"warm_up_hr_zone_duration\":108}",
+    "update_time": 1788227498,
+    "watermark": 169181758619943,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "intensity",
+    "time": 1787184000,
+    "value": "{\"duration\":28}",
+    "update_time": 1788227498,
+    "watermark": 169181758619946,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "valid_stand",
+    "time": 1787270400,
+    "value": "{\"count\":15}",
+    "update_time": 1788227498,
+    "watermark": 169181758619948,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "sleep",
+    "time": 1787270400,
+    "value": "{\"avg_hr\":67,\"avg_spo2\":0,\"day_sleep_evaluation\":1,\"segment_details\":[{\"bedtime\":1787314500,\"sleep_deep_duration\":0,\"duration\":84,\"sleep_light_duration\":0,\"timezone\":4,\"awake_count\":0,\"sleep_awake_duration\":0,\"wake_up_time\":1787319540},{\"bedtime\":1787309100,\"sleep_deep_duration\":0,\"duration\":70,\"sleep_light_duration\":0,\"timezone\":4,\"awake_count\":0,\"sleep_awake_duration\":0,\"wake_up_time\":1787313300},{\"avg_breath\":13,\"avg_hr\":67,\"bedtime\":1787279100,\"sleep_deep_duration\":70,\"duration\":253,\"sleep_light_duration\":129,\"max_hr\":108,\"min_hr\":49,\"sleep_rem_duration\":54,\"timezone\":4,\"awake_count\":2,\"sleep_awake_duration\":14,\"wake_up_time\":1787295120},{\"bedtime\":1787267220,\"sleep_deep_duration\":0,\"duration\":183,\"sleep_light_duration\":0,\"timezone\":4,\"wake_up_time\":1787278200}],\"long_sleep_evaluation\":3,\"max_hr\":108,\"min_hr\":49,\"sleep_awake_duration\":14,\"sleep_deep_duration\":70,\"sleep_light_duration\":129,\"sleep_rem_duration\":54,\"sleep_score\":78,\"sleep_stage\":3,\"total_duration\":590}",
+    "update_time": 1788227498,
+    "watermark": 169181758619951,
+    "source_sid_list": [
+      "953441174",
+      "xiaomiwear_app_manually"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "sleep",
+    "time": 1787184000,
+    "value": "{\"avg_hr\":66,\"avg_spo2\":0,\"day_sleep_evaluation\":0,\"segment_details\":[{\"avg_breath\":13,\"avg_hr\":66,\"bedtime\":1787194320,\"sleep_deep_duration\":58,\"duration\":195,\"sleep_light_duration\":99,\"max_hr\":90,\"min_hr\":39,\"sleep_rem_duration\":38,\"timezone\":4,\"awake_count\":1,\"sleep_awake_duration\":9,\"wake_up_time\":1787206560},{\"bedtime\":1787185980,\"sleep_deep_duration\":0,\"duration\":91,\"sleep_light_duration\":0,\"timezone\":4,\"wake_up_time\":1787191440},{\"bedtime\":1787179380,\"sleep_deep_duration\":0,\"duration\":98,\"sleep_light_duration\":0,\"timezone\":4,\"wake_up_time\":1787185260}],\"long_sleep_evaluation\":14,\"max_hr\":90,\"min_hr\":39,\"sleep_awake_duration\":9,\"sleep_deep_duration\":58,\"sleep_light_duration\":99,\"sleep_rem_duration\":38,\"sleep_score\":52,\"sleep_stage\":2,\"total_duration\":384}",
+    "update_time": 1788227498,
+    "watermark": 169181758619952,
+    "source_sid_list": [
+      "953441174",
+      "xiaomiwear_app_manually"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "steps",
+    "time": 1787184000,
+    "value": "{\"calories\":514,\"distance\":4287,\"steps\":7132}",
+    "update_time": 1788227506,
+    "watermark": 169181767008561,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "calories",
+    "time": 1787184000,
+    "value": "{\"calories\":1106}",
+    "update_time": 1788227506,
+    "watermark": 169181767008563,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "valid_stand",
+    "time": 1787184000,
+    "value": "{\"count\":16}",
+    "update_time": 1788227506,
+    "watermark": 169181767008567,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "calories",
+    "time": 1787097600,
+    "value": "{\"calories\":477}",
+    "update_time": 1788227518,
+    "watermark": 169181779591483,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "calories",
+    "time": 1787011200,
+    "value": "{\"calories\":84}",
+    "update_time": 1788227518,
+    "watermark": 169181779591484,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "heart_rate",
+    "time": 1787184000,
+    "value": "{\"abnormal_hr_count\":0,\"aerobic_hr_zone_duration\":0,\"anaerobic_hr_zone_duration\":0,\"avg_hr\":74,\"avg_rhr\":50,\"extreme_hr_zone_duration\":0,\"fat_burning_hr_zone_duration\":7,\"latest_hr\":{\"bpm\":88,\"type\":0,\"time\":1787270160,\"dbKey\":\"heart_rate\",\"dbTime\":1787266560,\"sid\":\"953441174\"},\"max_hr\":120,\"min_hr\":39,\"warm_up_hr_zone_duration\":39}",
+    "update_time": 1788227518,
+    "watermark": 169181779591485,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "heart_rate",
+    "time": 1787097600,
+    "value": "{\"abnormal_hr_count\":0,\"aerobic_hr_zone_duration\":0,\"anaerobic_hr_zone_duration\":0,\"avg_hr\":91,\"avg_rhr\":78,\"extreme_hr_zone_duration\":0,\"fat_burning_hr_zone_duration\":0,\"latest_hr\":{\"bpm\":91,\"type\":0,\"time\":1787183760,\"dbKey\":\"heart_rate\",\"dbTime\":1787180160,\"sid\":\"953441174\"},\"max_hr\":110,\"min_hr\":77,\"warm_up_hr_zone_duration\":19}",
+    "update_time": 1788227518,
+    "watermark": 169181779591486,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "heart_rate",
+    "time": 1787011200,
+    "value": "{\"abnormal_hr_count\":0,\"aerobic_hr_zone_duration\":0,\"anaerobic_hr_zone_duration\":0,\"avg_hr\":89,\"extreme_hr_zone_duration\":0,\"fat_burning_hr_zone_duration\":0,\"latest_hr\":{\"bpm\":103,\"type\":0,\"time\":1787096160,\"dbKey\":\"heart_rate\",\"dbTime\":1787092560,\"sid\":\"953441174\"},\"max_hr\":103,\"min_hr\":82,\"warm_up_hr_zone_duration\":1}",
+    "update_time": 1788227518,
+    "watermark": 169181779591487,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "valid_stand",
+    "time": 1787097600,
+    "value": "{\"count\":9}",
+    "update_time": 1788227518,
+    "watermark": 169181779591488,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "valid_stand",
+    "time": 1787011200,
+    "value": "{\"count\":2}",
+    "update_time": 1788227518,
+    "watermark": 169181779591489,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "steps",
+    "time": 1787097600,
+    "value": "{\"calories\":127,\"distance\":1060,\"steps\":1764}",
+    "update_time": 1788227528,
+    "watermark": 169181790077250,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "steps",
+    "time": 1787011200,
+    "value": "{\"calories\":22,\"distance\":235,\"steps\":390}",
+    "update_time": 1788227528,
+    "watermark": 169181790077251,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "intensity",
+    "time": 1787097600,
+    "value": "{\"duration\":3}",
+    "update_time": 1788227528,
+    "watermark": 169181790077252,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "intensity",
+    "time": 1787011200,
+    "value": "{\"duration\":1}",
+    "update_time": 1788227528,
+    "watermark": 169181790077253,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "intensity",
+    "time": 1786492800,
+    "value": "{\"duration\":7}",
+    "update_time": 1788227558,
+    "watermark": 169181821534556,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "valid_stand",
+    "time": 1786579200,
+    "value": "{\"count\":3}",
+    "update_time": 1788227558,
+    "watermark": 169181821534557,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "sleep",
+    "time": 1786579200,
+    "value": "{\"avg_hr\":73,\"avg_spo2\":0,\"day_sleep_evaluation\":0,\"segment_details\":[{\"avg_breath\":13,\"avg_hr\":73,\"bedtime\":1786575300,\"sleep_deep_duration\":122,\"duration\":361,\"sleep_light_duration\":134,\"max_hr\":97,\"min_hr\":55,\"sleep_rem_duration\":105,\"timezone\":4,\"awake_count\":1,\"sleep_awake_duration\":28,\"wake_up_time\":1786598640}],\"long_sleep_evaluation\":19,\"max_hr\":97,\"min_hr\":55,\"sleep_awake_duration\":28,\"sleep_deep_duration\":122,\"sleep_light_duration\":134,\"sleep_rem_duration\":105,\"sleep_score\":76,\"sleep_stage\":3,\"total_duration\":361}",
+    "update_time": 1788227558,
+    "watermark": 169181821534559,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "steps",
+    "time": 1786579200,
+    "value": "{\"calories\":67,\"distance\":259,\"steps\":431}",
+    "update_time": 1788227569,
+    "watermark": 169181833068897,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "calories",
+    "time": 1786579200,
+    "value": "{\"calories\":171}",
+    "update_time": 1788227569,
+    "watermark": 169181833068900,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "heart_rate",
+    "time": 1786579200,
+    "value": "{\"abnormal_hr_count\":0,\"aerobic_hr_zone_duration\":0,\"anaerobic_hr_zone_duration\":0,\"avg_hr\":72,\"avg_rhr\":63,\"extreme_hr_zone_duration\":0,\"fat_burning_hr_zone_duration\":0,\"latest_hr\":{\"bpm\":96,\"type\":0,\"time\":1786610220,\"dbKey\":\"heart_rate\",\"dbTime\":1786606620,\"sid\":\"953441174\"},\"max_hr\":101,\"min_hr\":55,\"warm_up_hr_zone_duration\":9}",
+    "update_time": 1788227569,
+    "watermark": 169181833068903,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "steps",
+    "time": 1786492800,
+    "value": "{\"calories\":304,\"distance\":1798,\"steps\":2991}",
+    "update_time": 1788227578,
+    "watermark": 169181842506094,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "calories",
+    "time": 1786492800,
+    "value": "{\"calories\":826}",
+    "update_time": 1788227578,
+    "watermark": 169181842506097,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "heart_rate",
+    "time": 1786492800,
+    "value": "{\"abnormal_hr_count\":0,\"aerobic_hr_zone_duration\":0,\"anaerobic_hr_zone_duration\":0,\"avg_hr\":84,\"avg_rhr\":73,\"extreme_hr_zone_duration\":0,\"fat_burning_hr_zone_duration\":2,\"latest_hr\":{\"bpm\":77,\"type\":0,\"time\":1786579140,\"dbKey\":\"heart_rate\",\"dbTime\":1786575540,\"sid\":\"953441174\"},\"max_hr\":115,\"min_hr\":56,\"warm_up_hr_zone_duration\":96}",
+    "update_time": 1788227578,
+    "watermark": 169181842506100,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "valid_stand",
+    "time": 1786492800,
+    "value": "{\"count\":14}",
+    "update_time": 1788227578,
+    "watermark": 169181842506104,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "sleep",
+    "time": 1786492800,
+    "value": "{\"avg_hr\":80,\"avg_spo2\":0,\"day_sleep_evaluation\":0,\"segment_details\":[{\"bedtime\":1786549140,\"sleep_deep_duration\":0,\"duration\":99,\"sleep_light_duration\":0,\"timezone\":4,\"awake_count\":0,\"sleep_awake_duration\":0,\"wake_up_time\":1786555080},{\"avg_breath\":14,\"avg_hr\":80,\"bedtime\":1786494360,\"sleep_deep_duration\":138,\"duration\":447,\"sleep_light_duration\":206,\"max_hr\":103,\"min_hr\":56,\"sleep_rem_duration\":103,\"timezone\":4,\"awake_count\":2,\"sleep_awake_duration\":42,\"wake_up_time\":1786523700}],\"long_sleep_evaluation\":20,\"max_hr\":103,\"min_hr\":56,\"sleep_awake_duration\":42,\"sleep_deep_duration\":138,\"sleep_light_duration\":206,\"sleep_rem_duration\":103,\"sleep_score\":69,\"sleep_stage\":3,\"total_duration\":546}",
+    "update_time": 1788227578,
+    "watermark": 169181842506107,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "steps",
+    "time": 1786406400,
+    "value": "{\"calories\":137,\"distance\":773,\"steps\":1287}",
+    "update_time": 1788227589,
+    "watermark": 169181854040445,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "calories",
+    "time": 1786406400,
+    "value": "{\"calories\":670}",
+    "update_time": 1788227589,
+    "watermark": 169181854040447,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "heart_rate",
+    "time": 1786406400,
+    "value": "{\"abnormal_hr_count\":0,\"aerobic_hr_zone_duration\":0,\"anaerobic_hr_zone_duration\":0,\"avg_hr\":73,\"avg_rhr\":53,\"extreme_hr_zone_duration\":0,\"fat_burning_hr_zone_duration\":0,\"latest_hr\":{\"bpm\":105,\"type\":0,\"time\":1786492740,\"dbKey\":\"heart_rate\",\"dbTime\":1786489140,\"sid\":\"953441174\"},\"max_hr\":105,\"min_hr\":48,\"warm_up_hr_zone_duration\":19}",
+    "update_time": 1788227589,
+    "watermark": 169181854040450,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "valid_stand",
+    "time": 1786406400,
+    "value": "{\"count\":11}",
+    "update_time": 1788227589,
+    "watermark": 169181854040454,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "sleep",
+    "time": 1786406400,
+    "value": "{\"avg_hr\":73,\"avg_spo2\":0,\"day_sleep_evaluation\":0,\"segment_details\":[{\"bedtime\":1786429620,\"sleep_deep_duration\":0,\"duration\":43,\"sleep_light_duration\":0,\"timezone\":4,\"awake_count\":0,\"sleep_awake_duration\":0,\"wake_up_time\":1786432200},{\"avg_breath\":14,\"avg_hr\":73,\"bedtime\":1786400940,\"sleep_deep_duration\":93,\"duration\":361,\"sleep_light_duration\":184,\"max_hr\":93,\"min_hr\":52,\"sleep_rem_duration\":84,\"timezone\":4,\"awake_count\":1,\"sleep_awake_duration\":33,\"wake_up_time\":1786424580}],\"long_sleep_evaluation\":17,\"max_hr\":93,\"min_hr\":52,\"sleep_awake_duration\":33,\"sleep_deep_duration\":93,\"sleep_light_duration\":184,\"sleep_rem_duration\":84,\"sleep_score\":78,\"sleep_stage\":3,\"total_duration\":404}",
+    "update_time": 1788227589,
+    "watermark": 169181854040457,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "intensity",
+    "time": 1786320000,
+    "value": "{\"duration\":25}",
+    "update_time": 1788227598,
+    "watermark": 169181863477650,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "sleep",
+    "time": 1786320000,
+    "value": "{\"avg_hr\":0,\"avg_spo2\":0,\"day_sleep_evaluation\":5,\"segment_details\":[{\"bedtime\":1786334640,\"sleep_deep_duration\":0,\"duration\":92,\"sleep_light_duration\":0,\"timezone\":4,\"awake_count\":0,\"sleep_awake_duration\":0,\"wake_up_time\":1786340160},{\"bedtime\":1786327800,\"sleep_deep_duration\":0,\"duration\":71,\"sleep_light_duration\":0,\"timezone\":4,\"awake_count\":0,\"sleep_awake_duration\":0,\"wake_up_time\":1786332060},{\"bedtime\":1786322760,\"sleep_deep_duration\":0,\"duration\":53,\"sleep_light_duration\":0,\"timezone\":4,\"awake_count\":0,\"sleep_awake_duration\":0,\"wake_up_time\":1786325940},{\"bedtime\":1786315140,\"sleep_deep_duration\":0,\"duration\":96,\"sleep_light_duration\":0,\"timezone\":4,\"awake_count\":0,\"sleep_awake_duration\":0,\"wake_up_time\":1786320900}],\"long_sleep_evaluation\":0,\"sleep_awake_duration\":0,\"sleep_deep_duration\":0,\"sleep_light_duration\":0,\"sleep_score\":40,\"sleep_stage\":1,\"total_duration\":312}",
+    "update_time": 1788227598,
+    "watermark": 169181863477654,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "steps",
+    "time": 1786320000,
+    "value": "{\"calories\":485,\"distance\":4388,\"steps\":7300}",
+    "update_time": 1788227608,
+    "watermark": 169181873963416,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "calories",
+    "time": 1786320000,
+    "value": "{\"calories\":988}",
+    "update_time": 1788227608,
+    "watermark": 169181873963419,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "heart_rate",
+    "time": 1786320000,
+    "value": "{\"abnormal_hr_count\":0,\"aerobic_hr_zone_duration\":0,\"anaerobic_hr_zone_duration\":0,\"avg_hr\":76,\"avg_rhr\":55,\"extreme_hr_zone_duration\":0,\"fat_burning_hr_zone_duration\":0,\"latest_hr\":{\"bpm\":87,\"type\":0,\"time\":1786406340,\"dbKey\":\"heart_rate\",\"dbTime\":1786402740,\"sid\":\"953441174\"},\"max_hr\":109,\"min_hr\":49,\"warm_up_hr_zone_duration\":24}",
+    "update_time": 1788227608,
+    "watermark": 169181873963422,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "valid_stand",
+    "time": 1786320000,
+    "value": "{\"count\":14}",
+    "update_time": 1788227608,
+    "watermark": 169181873963427,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "steps",
+    "time": 1786233600,
+    "value": "{\"calories\":436,\"distance\":2849,\"steps\":4739}",
+    "update_time": 1788227618,
+    "watermark": 169181885497768,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "calories",
+    "time": 1786233600,
+    "value": "{\"calories\":1256}",
+    "update_time": 1788227618,
+    "watermark": 169181885497771,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "heart_rate",
+    "time": 1786233600,
+    "value": "{\"abnormal_hr_count\":0,\"aerobic_hr_zone_duration\":0,\"anaerobic_hr_zone_duration\":0,\"avg_hr\":88,\"avg_rhr\":73,\"extreme_hr_zone_duration\":0,\"fat_burning_hr_zone_duration\":1,\"latest_hr\":{\"bpm\":84,\"type\":0,\"time\":1786319940,\"dbKey\":\"heart_rate\",\"dbTime\":1786316340,\"sid\":\"953441174\"},\"max_hr\":121,\"min_hr\":62,\"warm_up_hr_zone_duration\":83}",
+    "update_time": 1788227618,
+    "watermark": 169181885497774,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "intensity",
+    "time": 1786233600,
+    "value": "{\"duration\":19}",
+    "update_time": 1788227618,
+    "watermark": 169181885497777,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "valid_stand",
+    "time": 1786233600,
+    "value": "{\"count\":18}",
+    "update_time": 1788227618,
+    "watermark": 169181885497780,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "sleep",
+    "time": 1786233600,
+    "value": "{\"avg_hr\":86,\"avg_spo2\":0,\"day_sleep_evaluation\":1,\"segment_details\":[{\"bedtime\":1786310340,\"sleep_deep_duration\":0,\"duration\":65,\"sleep_light_duration\":0,\"timezone\":4,\"awake_count\":0,\"sleep_awake_duration\":0,\"wake_up_time\":1786314240},{\"bedtime\":1786272420,\"sleep_deep_duration\":0,\"duration\":38,\"sleep_light_duration\":0,\"timezone\":4,\"awake_count\":0,\"sleep_awake_duration\":0,\"wake_up_time\":1786274700},{\"avg_breath\":13,\"avg_hr\":86,\"bedtime\":1786228200,\"sleep_deep_duration\":92,\"duration\":236,\"sleep_light_duration\":102,\"max_hr\":102,\"min_hr\":73,\"sleep_rem_duration\":42,\"timezone\":4,\"awake_count\":1,\"sleep_awake_duration\":23,\"wake_up_time\":1786243740}],\"long_sleep_evaluation\":17,\"max_hr\":102,\"min_hr\":73,\"sleep_awake_duration\":23,\"sleep_deep_duration\":92,\"sleep_light_duration\":102,\"sleep_rem_duration\":42,\"sleep_score\":62,\"sleep_stage\":3,\"total_duration\":339}",
+    "update_time": 1788227618,
+    "watermark": 169181885497783,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "intensity",
+    "time": 1786147200,
+    "value": "{\"duration\":32}",
+    "update_time": 1788227629,
+    "watermark": 169181895983551,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "valid_stand",
+    "time": 1786147200,
+    "value": "{\"count\":20}",
+    "update_time": 1788227629,
+    "watermark": 169181895983553,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "sleep",
+    "time": 1786147200,
+    "value": "{\"avg_hr\":84,\"avg_spo2\":0,\"day_sleep_evaluation\":1,\"segment_details\":[{\"bedtime\":1786198320,\"sleep_deep_duration\":0,\"duration\":15,\"sleep_light_duration\":0,\"timezone\":4,\"awake_count\":0,\"sleep_awake_duration\":0,\"wake_up_time\":1786199220},{\"bedtime\":1786196160,\"sleep_deep_duration\":0,\"duration\":24,\"sleep_light_duration\":0,\"timezone\":4,\"awake_count\":0,\"sleep_awake_duration\":0,\"wake_up_time\":1786197600},{\"avg_breath\":14,\"avg_hr\":84,\"bedtime\":1786157040,\"sleep_deep_duration\":51,\"duration\":182,\"sleep_light_duration\":92,\"max_hr\":99,\"min_hr\":72,\"sleep_rem_duration\":39,\"timezone\":4,\"awake_count\":1,\"sleep_awake_duration\":28,\"wake_up_time\":1786169640}],\"long_sleep_evaluation\":16,\"max_hr\":99,\"min_hr\":72,\"sleep_awake_duration\":28,\"sleep_deep_duration\":51,\"sleep_light_duration\":92,\"sleep_rem_duration\":39,\"sleep_score\":49,\"sleep_stage\":2,\"total_duration\":221}",
+    "update_time": 1788227629,
+    "watermark": 169181895983555,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "steps",
+    "time": 1786147200,
+    "value": "{\"calories\":651,\"distance\":4346,\"steps\":7229}",
+    "update_time": 1788227639,
+    "watermark": 169181906469317,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "calories",
+    "time": 1786147200,
+    "value": "{\"calories\":1541}",
+    "update_time": 1788227639,
+    "watermark": 169181906469320,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "heart_rate",
+    "time": 1786147200,
+    "value": "{\"abnormal_hr_count\":0,\"aerobic_hr_zone_duration\":1,\"anaerobic_hr_zone_duration\":0,\"avg_hr\":89,\"avg_rhr\":75,\"extreme_hr_zone_duration\":0,\"fat_burning_hr_zone_duration\":11,\"latest_hr\":{\"bpm\":94,\"type\":0,\"time\":1786233540,\"dbKey\":\"heart_rate\",\"dbTime\":1786229940,\"sid\":\"953441174\"},\"max_hr\":137,\"min_hr\":72,\"warm_up_hr_zone_duration\":112}",
+    "update_time": 1788227639,
+    "watermark": 169181906469323,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "intensity",
+    "time": 1786060800,
+    "value": "{\"duration\":60}",
+    "update_time": 1788227639,
+    "watermark": 169181906469326,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "sleep",
+    "time": 1786060800,
+    "value": "{\"avg_hr\":73,\"avg_spo2\":0,\"day_sleep_evaluation\":0,\"segment_details\":[{\"avg_breath\":13,\"avg_hr\":73,\"bedtime\":1786062660,\"sleep_deep_duration\":108,\"duration\":338,\"sleep_light_duration\":152,\"max_hr\":98,\"min_hr\":48,\"sleep_rem_duration\":78,\"timezone\":4,\"awake_count\":2,\"sleep_awake_duration\":16,\"wake_up_time\":1786083900}],\"long_sleep_evaluation\":25,\"max_hr\":98,\"min_hr\":48,\"sleep_awake_duration\":16,\"sleep_deep_duration\":108,\"sleep_light_duration\":152,\"sleep_rem_duration\":78,\"sleep_score\":66,\"sleep_stage\":3,\"total_duration\":338}",
+    "update_time": 1788227639,
+    "watermark": 169181906469330,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "steps",
+    "time": 1786060800,
+    "value": "{\"calories\":735,\"distance\":5709,\"steps\":9495}",
+    "update_time": 1788227649,
+    "watermark": 169181916955092,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "calories",
+    "time": 1786060800,
+    "value": "{\"calories\":1382}",
+    "update_time": 1788227649,
+    "watermark": 169181916955095,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "heart_rate",
+    "time": 1786060800,
+    "value": "{\"abnormal_hr_count\":0,\"aerobic_hr_zone_duration\":0,\"anaerobic_hr_zone_duration\":0,\"avg_hr\":80,\"avg_rhr\":79,\"extreme_hr_zone_duration\":0,\"fat_burning_hr_zone_duration\":18,\"latest_hr\":{\"bpm\":126,\"type\":0,\"time\":1786146660,\"dbKey\":\"heart_rate\",\"dbTime\":1786143060,\"sid\":\"953441174\"},\"max_hr\":132,\"min_hr\":48,\"warm_up_hr_zone_duration\":64}",
+    "update_time": 1788227649,
+    "watermark": 169181916955098,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "valid_stand",
+    "time": 1786060800,
+    "value": "{\"count\":10}",
+    "update_time": 1788227649,
+    "watermark": 169181916955103,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "steps",
+    "time": 1785974400,
+    "value": "{\"calories\":263,\"distance\":1601,\"steps\":2664}",
+    "update_time": 1788227659,
+    "watermark": 169181927440868,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "calories",
+    "time": 1785974400,
+    "value": "{\"calories\":872}",
+    "update_time": 1788227659,
+    "watermark": 169181927440871,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "heart_rate",
+    "time": 1785974400,
+    "value": "{\"abnormal_hr_count\":0,\"aerobic_hr_zone_duration\":0,\"anaerobic_hr_zone_duration\":0,\"avg_hr\":78,\"avg_rhr\":69,\"extreme_hr_zone_duration\":0,\"fat_burning_hr_zone_duration\":0,\"latest_hr\":{\"bpm\":97,\"type\":0,\"time\":1786060260,\"dbKey\":\"heart_rate\",\"dbTime\":1786056660,\"sid\":\"953441174\"},\"max_hr\":109,\"min_hr\":49,\"warm_up_hr_zone_duration\":76}",
+    "update_time": 1788227659,
+    "watermark": 169181927440874,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "intensity",
+    "time": 1785974400,
+    "value": "{\"duration\":2}",
+    "update_time": 1788227659,
+    "watermark": 169181927440877,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "valid_stand",
+    "time": 1785974400,
+    "value": "{\"count\":17}",
+    "update_time": 1788227659,
+    "watermark": 169181927440879,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "sleep",
+    "time": 1785974400,
+    "value": "{\"avg_hr\":70,\"avg_spo2\":0,\"day_sleep_evaluation\":0,\"segment_details\":[{\"bedtime\":1786041120,\"sleep_deep_duration\":0,\"duration\":48,\"sleep_light_duration\":0,\"timezone\":4,\"awake_count\":0,\"sleep_awake_duration\":0,\"wake_up_time\":1786044000},{\"avg_breath\":13,\"avg_hr\":70,\"bedtime\":1785982920,\"sleep_deep_duration\":77,\"duration\":241,\"sleep_light_duration\":98,\"max_hr\":86,\"min_hr\":49,\"sleep_rem_duration\":66,\"timezone\":4,\"awake_count\":1,\"sleep_awake_duration\":15,\"wake_up_time\":1785998280}],\"long_sleep_evaluation\":29,\"max_hr\":86,\"min_hr\":49,\"sleep_awake_duration\":15,\"sleep_deep_duration\":77,\"sleep_light_duration\":98,\"sleep_rem_duration\":66,\"sleep_score\":57,\"sleep_stage\":2,\"total_duration\":289}",
+    "update_time": 1788227659,
+    "watermark": 169181927440882,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "valid_stand",
+    "time": 1785888000,
+    "value": "{\"count\":16}",
+    "update_time": 1788227669,
+    "watermark": 169181937926652,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "sleep",
+    "time": 1785888000,
+    "value": "{\"avg_hr\":0,\"avg_spo2\":0,\"day_sleep_evaluation\":5,\"segment_details\":[{\"bedtime\":1785943020,\"sleep_deep_duration\":0,\"duration\":99,\"sleep_light_duration\":0,\"timezone\":4,\"awake_count\":0,\"sleep_awake_duration\":0,\"wake_up_time\":1785948960},{\"bedtime\":1785932340,\"sleep_deep_duration\":0,\"duration\":44,\"sleep_light_duration\":0,\"timezone\":4,\"awake_count\":0,\"sleep_awake_duration\":0,\"wake_up_time\":1785934980},{\"bedtime\":1785928200,\"sleep_deep_duration\":0,\"duration\":25,\"sleep_light_duration\":0,\"timezone\":4,\"awake_count\":0,\"sleep_awake_duration\":0,\"wake_up_time\":1785929700},{\"bedtime\":1785901920,\"sleep_deep_duration\":0,\"duration\":168,\"sleep_light_duration\":0,\"timezone\":4,\"awake_count\":0,\"sleep_awake_duration\":0,\"wake_up_time\":1785912000},{\"bedtime\":1785887700,\"sleep_deep_duration\":0,\"duration\":173,\"sleep_light_duration\":0,\"timezone\":4,\"awake_count\":0,\"sleep_awake_duration\":0,\"wake_up_time\":1785898080}],\"long_sleep_evaluation\":0,\"sleep_awake_duration\":0,\"sleep_deep_duration\":0,\"sleep_light_duration\":0,\"sleep_score\":40,\"sleep_stage\":1,\"total_duration\":509}",
+    "update_time": 1788227669,
+    "watermark": 169181937926654,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "steps",
+    "time": 1785888000,
+    "value": "{\"calories\":453,\"distance\":3497,\"steps\":5818}",
+    "update_time": 1788227679,
+    "watermark": 169181948412416,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "calories",
+    "time": 1785888000,
+    "value": "{\"calories\":947}",
+    "update_time": 1788227679,
+    "watermark": 169181948412419,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "heart_rate",
+    "time": 1785888000,
+    "value": "{\"abnormal_hr_count\":0,\"aerobic_hr_zone_duration\":0,\"anaerobic_hr_zone_duration\":0,\"avg_hr\":81,\"avg_rhr\":66,\"extreme_hr_zone_duration\":0,\"fat_burning_hr_zone_duration\":2,\"latest_hr\":{\"bpm\":79,\"type\":0,\"time\":1785974280,\"dbKey\":\"heart_rate\",\"dbTime\":1785970680,\"sid\":\"953441174\"},\"max_hr\":116,\"min_hr\":50,\"warm_up_hr_zone_duration\":104}",
+    "update_time": 1788227679,
+    "watermark": 169181948412422,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "intensity",
+    "time": 1785888000,
+    "value": "{\"duration\":28}",
+    "update_time": 1788227679,
+    "watermark": 169181948412425,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "intensity",
+    "time": 1785801600,
+    "value": "{\"duration\":42}",
+    "update_time": 1788227679,
+    "watermark": 169181948412426,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "steps",
+    "time": 1785801600,
+    "value": "{\"calories\":572,\"distance\":4668,\"steps\":7762}",
+    "update_time": 1788227689,
+    "watermark": 169181958898192,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "calories",
+    "time": 1785801600,
+    "value": "{\"calories\":1364}",
+    "update_time": 1788227689,
+    "watermark": 169181958898195,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "heart_rate",
+    "time": 1785801600,
+    "value": "{\"abnormal_hr_count\":0,\"aerobic_hr_zone_duration\":0,\"anaerobic_hr_zone_duration\":0,\"avg_hr\":83,\"avg_rhr\":67,\"extreme_hr_zone_duration\":0,\"fat_burning_hr_zone_duration\":6,\"latest_hr\":{\"bpm\":84,\"type\":0,\"time\":1785887700,\"dbKey\":\"heart_rate\",\"dbTime\":1785884100,\"sid\":\"953441174\"},\"max_hr\":122,\"min_hr\":48,\"warm_up_hr_zone_duration\":79}",
+    "update_time": 1788227689,
+    "watermark": 169181958898198,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "valid_stand",
+    "time": 1785801600,
+    "value": "{\"count\":17}",
+    "update_time": 1788227689,
+    "watermark": 169181958898201,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "sleep",
+    "time": 1785801600,
+    "value": "{\"avg_hr\":0,\"avg_spo2\":0,\"day_sleep_evaluation\":5,\"segment_details\":[{\"bedtime\":1785850260,\"sleep_deep_duration\":0,\"duration\":30,\"sleep_light_duration\":0,\"timezone\":4,\"awake_count\":0,\"sleep_awake_duration\":0,\"wake_up_time\":1785852060},{\"bedtime\":1785822240,\"sleep_deep_duration\":0,\"duration\":39,\"sleep_light_duration\":0,\"timezone\":4,\"awake_count\":0,\"sleep_awake_duration\":0,\"wake_up_time\":1785824580},{\"bedtime\":1785806640,\"sleep_deep_duration\":0,\"duration\":140,\"sleep_light_duration\":0,\"timezone\":4,\"awake_count\":0,\"sleep_awake_duration\":0,\"wake_up_time\":1785815040}],\"long_sleep_evaluation\":0,\"sleep_awake_duration\":0,\"sleep_deep_duration\":0,\"sleep_light_duration\":0,\"sleep_score\":40,\"sleep_stage\":1,\"total_duration\":209}",
+    "update_time": 1788227689,
+    "watermark": 169181958898204,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "steps",
+    "time": 1785715200,
+    "value": "{\"calories\":482,\"distance\":3394,\"steps\":5647}",
+    "update_time": 1788227699,
+    "watermark": 169181969383966,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "calories",
+    "time": 1785715200,
+    "value": "{\"calories\":1019}",
+    "update_time": 1788227699,
+    "watermark": 169181969383969,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "heart_rate",
+    "time": 1785715200,
+    "value": "{\"abnormal_hr_count\":0,\"aerobic_hr_zone_duration\":0,\"anaerobic_hr_zone_duration\":0,\"avg_hr\":82,\"avg_rhr\":68,\"extreme_hr_zone_duration\":0,\"fat_burning_hr_zone_duration\":1,\"latest_hr\":{\"bpm\":67,\"type\":0,\"time\":1785801540,\"dbKey\":\"heart_rate\",\"dbTime\":1785797940,\"sid\":\"953441174\"},\"max_hr\":116,\"min_hr\":60,\"warm_up_hr_zone_duration\":58}",
+    "update_time": 1788227699,
+    "watermark": 169181969383972,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "intensity",
+    "time": 1785715200,
+    "value": "{\"duration\":23}",
+    "update_time": 1788227699,
+    "watermark": 169181969383975,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "valid_stand",
+    "time": 1785715200,
+    "value": "{\"count\":17}",
+    "update_time": 1788227699,
+    "watermark": 169181969383977,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "sleep",
+    "time": 1785715200,
+    "value": "{\"avg_hr\":0,\"avg_spo2\":0,\"day_sleep_evaluation\":5,\"segment_details\":[{\"bedtime\":1785740940,\"sleep_deep_duration\":0,\"duration\":59,\"sleep_light_duration\":0,\"timezone\":4,\"awake_count\":0,\"sleep_awake_duration\":0,\"wake_up_time\":1785744480},{\"bedtime\":1785729360,\"sleep_deep_duration\":0,\"duration\":76,\"sleep_light_duration\":0,\"timezone\":4,\"awake_count\":0,\"sleep_awake_duration\":0,\"wake_up_time\":1785733920},{\"bedtime\":1785721620,\"sleep_deep_duration\":0,\"duration\":66,\"sleep_light_duration\":0,\"timezone\":4,\"awake_count\":0,\"sleep_awake_duration\":0,\"wake_up_time\":1785725580},{\"bedtime\":1785714540,\"sleep_deep_duration\":0,\"duration\":107,\"sleep_light_duration\":0,\"timezone\":4,\"awake_count\":0,\"sleep_awake_duration\":0,\"wake_up_time\":1785720960}],\"long_sleep_evaluation\":0,\"sleep_awake_duration\":0,\"sleep_deep_duration\":0,\"sleep_light_duration\":0,\"sleep_score\":40,\"sleep_stage\":1,\"total_duration\":308}",
+    "update_time": 1788227699,
+    "watermark": 169181969383980,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "intensity",
+    "time": 1785628800,
+    "value": "{\"duration\":23}",
+    "update_time": 1788227710,
+    "watermark": 169181980918324,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "intensity",
+    "time": 1785542400,
+    "value": "{\"duration\":22}",
+    "update_time": 1788227710,
+    "watermark": 169181980918325,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "sleep",
+    "time": 1785628800,
+    "value": "{\"avg_hr\":82,\"avg_spo2\":0,\"day_sleep_evaluation\":0,\"segment_details\":[{\"avg_breath\":14,\"avg_hr\":82,\"bedtime\":1785636180,\"sleep_deep_duration\":54,\"duration\":201,\"sleep_light_duration\":106,\"max_hr\":99,\"min_hr\":59,\"sleep_rem_duration\":41,\"timezone\":4,\"awake_count\":1,\"sleep_awake_duration\":5,\"wake_up_time\":1785648540}],\"long_sleep_evaluation\":4,\"max_hr\":99,\"min_hr\":59,\"sleep_awake_duration\":5,\"sleep_deep_duration\":54,\"sleep_light_duration\":106,\"sleep_rem_duration\":41,\"sleep_score\":50,\"sleep_stage\":2,\"total_duration\":201}",
+    "update_time": 1788227710,
+    "watermark": 169181980918328,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "sleep",
+    "time": 1785542400,
+    "value": "{\"avg_hr\":77,\"avg_spo2\":0,\"day_sleep_evaluation\":0,\"segment_details\":[{\"avg_hr\":77,\"bedtime\":1785537420,\"sleep_deep_duration\":134,\"duration\":396,\"sleep_light_duration\":262,\"max_hr\":90,\"min_hr\":60,\"timezone\":4,\"awake_count\":4,\"sleep_awake_duration\":85,\"wake_up_time\":1785566280}],\"long_sleep_evaluation\":16,\"max_hr\":90,\"min_hr\":60,\"sleep_awake_duration\":85,\"sleep_deep_duration\":134,\"sleep_light_duration\":262,\"sleep_score\":57,\"sleep_stage\":1,\"total_duration\":396}",
+    "update_time": 1788227710,
+    "watermark": 169181980918329,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "steps",
+    "time": 1785628800,
+    "value": "{\"calories\":515,\"distance\":3467,\"steps\":5737}",
+    "update_time": 1788227719,
+    "watermark": 169181990355514,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "calories",
+    "time": 1785628800,
+    "value": "{\"calories\":1423}",
+    "update_time": 1788227719,
+    "watermark": 169181990355517,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "heart_rate",
+    "time": 1785628800,
+    "value": "{\"abnormal_hr_count\":0,\"aerobic_hr_zone_duration\":4,\"anaerobic_hr_zone_duration\":0,\"avg_hr\":86,\"avg_rhr\":68,\"extreme_hr_zone_duration\":0,\"fat_burning_hr_zone_duration\":9,\"latest_hr\":{\"bpm\":99,\"type\":0,\"time\":1785715020,\"dbKey\":\"heart_rate\",\"dbTime\":1785711420,\"sid\":\"953441174\"},\"max_hr\":140,\"min_hr\":59,\"warm_up_hr_zone_duration\":58}",
+    "update_time": 1788227719,
+    "watermark": 169181990355520,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "valid_stand",
+    "time": 1785628800,
+    "value": "{\"count\":17}",
+    "update_time": 1788227719,
+    "watermark": 169181990355523,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "steps",
+    "time": 1785542400,
+    "value": "{\"calories\":523,\"distance\":3610,\"steps\":6006}",
+    "update_time": 1788227722,
+    "watermark": 169181993501254,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "steps",
+    "time": 1785456000,
+    "value": "{\"calories\":228,\"distance\":1230,\"steps\":2045}",
+    "update_time": 1788227722,
+    "watermark": 169181993501255,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "calories",
+    "time": 1785542400,
+    "value": "{\"calories\":1253}",
+    "update_time": 1788227722,
+    "watermark": 169181993501256,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "calories",
+    "time": 1785456000,
+    "value": "{\"calories\":752}",
+    "update_time": 1788227722,
+    "watermark": 169181993501257,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "heart_rate",
+    "time": 1785542400,
+    "value": "{\"abnormal_hr_count\":0,\"aerobic_hr_zone_duration\":0,\"anaerobic_hr_zone_duration\":0,\"avg_hr\":87,\"avg_rhr\":73,\"extreme_hr_zone_duration\":0,\"fat_burning_hr_zone_duration\":5,\"latest_hr\":{\"bpm\":93,\"type\":0,\"time\":1785628380,\"dbKey\":\"heart_rate\",\"dbTime\":1785624780,\"sid\":\"953441174\"},\"max_hr\":122,\"min_hr\":59,\"warm_up_hr_zone_duration\":33}",
+    "update_time": 1788227722,
+    "watermark": 169181993501258,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "heart_rate",
+    "time": 1785456000,
+    "value": "{\"abnormal_hr_count\":0,\"aerobic_hr_zone_duration\":0,\"anaerobic_hr_zone_duration\":0,\"avg_hr\":90,\"avg_rhr\":81,\"extreme_hr_zone_duration\":0,\"fat_burning_hr_zone_duration\":0,\"latest_hr\":{\"bpm\":81,\"type\":0,\"time\":1785541920,\"dbKey\":\"heart_rate\",\"dbTime\":1785538320,\"sid\":\"953441174\"},\"max_hr\":106,\"min_hr\":67,\"warm_up_hr_zone_duration\":21}",
+    "update_time": 1788227722,
+    "watermark": 169181993501259,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "953441174",
+    "tag": "daily_report",
+    "key": "stress",
+    "time": 1785456000,
+    "value": "{\"avg_stress\":25,\"max_stress\":25,\"min_stress\":25,\"stress_scale\":{\"mild\":0,\"moderate\":0,\"relax\":1,\"severe\":0}}",
+    "update_time": 1788227722,
+    "watermark": 169181993501260,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "spo2",
+    "time": 1785456000,
+    "value": "{\"avg_spo2\":95,\"lack_spo2_count\":0,\"latest_spo2\":{\"spo2\":95,\"time\":1785503047,\"dbKey\":\"single_spo2\",\"dbTime\":1785499447,\"sid\":\"953441174\"},\"max_spo2\":95,\"min_spo2\":95}",
+    "update_time": 1788227722,
+    "watermark": 169181993501261,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "valid_stand",
+    "time": 1785542400,
+    "value": "{\"count\":16}",
+    "update_time": 1788227722,
+    "watermark": 169181993501262,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "valid_stand",
+    "time": 1785456000,
+    "value": "{\"count\":10}",
+    "update_time": 1788227722,
+    "watermark": 169181993501263,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "calories",
+    "time": 1788566400,
+    "value": "{\"calories\":544}",
+    "update_time": 1788606104,
+    "watermark": 169578755784848,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "calories",
+    "time": 1788480000,
+    "value": "{\"calories\":1975}",
+    "update_time": 1788606104,
+    "watermark": 169578755784849,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "calories",
+    "time": 1788393600,
+    "value": "{\"calories\":1520}",
+    "update_time": 1788606104,
+    "watermark": 169578755784850,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "calories",
+    "time": 1788307200,
+    "value": "{\"calories\":1094}",
+    "update_time": 1788606104,
+    "watermark": 169578755784851,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "heart_rate",
+    "time": 1788480000,
+    "value": "{\"abnormal_hr_count\":0,\"aerobic_hr_zone_duration\":1,\"anaerobic_hr_zone_duration\":0,\"avg_hr\":88,\"avg_rhr\":76,\"extreme_hr_zone_duration\":0,\"fat_burning_hr_zone_duration\":41,\"latest_hr\":{\"bpm\":94,\"time\":1788566220,\"dbKey\":\"heart_rate\",\"dbTime\":1788559020,\"sid\":\"953441174\"},\"max_hr\":135,\"min_hr\":59,\"warm_up_hr_zone_duration\":83}",
+    "update_time": 1788606104,
+    "watermark": 169578755784853,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "heart_rate",
+    "time": 1788307200,
+    "value": "{\"abnormal_hr_count\":0,\"aerobic_hr_zone_duration\":0,\"anaerobic_hr_zone_duration\":0,\"avg_hr\":81,\"avg_rhr\":63,\"extreme_hr_zone_duration\":0,\"fat_burning_hr_zone_duration\":14,\"latest_hr\":{\"bpm\":100,\"time\":1788392220,\"dbKey\":\"heart_rate\",\"dbTime\":1788385020,\"sid\":\"953441174\"},\"max_hr\":127,\"min_hr\":46,\"warm_up_hr_zone_duration\":84}",
+    "update_time": 1788606104,
+    "watermark": 169578755784855,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "intensity",
+    "time": 1788566400,
+    "value": "{\"duration\":35}",
+    "update_time": 1788606104,
+    "watermark": 169578755784856,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "intensity",
+    "time": 1788480000,
+    "value": "{\"duration\":101}",
+    "update_time": 1788606104,
+    "watermark": 169578755784857,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "intensity",
+    "time": 1788393600,
+    "value": "{\"duration\":79}",
+    "update_time": 1788606104,
+    "watermark": 169578755784858,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "intensity",
+    "time": 1788307200,
+    "value": "{\"duration\":65}",
+    "update_time": 1788606104,
+    "watermark": 169578755784859,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "valid_stand",
+    "time": 1788566400,
+    "value": "{\"count\":5}",
+    "update_time": 1788606104,
+    "watermark": 169578755784860,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "valid_stand",
+    "time": 1788480000,
+    "value": "{\"count\":18}",
+    "update_time": 1788606104,
+    "watermark": 169578755784861,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "valid_stand",
+    "time": 1788393600,
+    "value": "{\"count\":18}",
+    "update_time": 1788606104,
+    "watermark": 169578755784862,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "steps",
+    "time": 1788566400,
+    "value": "{\"calories\":280,\"distance\":3062,\"steps\":5094}",
+    "update_time": 1788606106,
+    "watermark": 169578757882038,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "steps",
+    "time": 1788480000,
+    "value": "{\"calories\":1488,\"distance\":15801,\"steps\":26284}",
+    "update_time": 1788606106,
+    "watermark": 169578757882039,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "steps",
+    "time": 1788393600,
+    "value": "{\"calories\":904,\"distance\":8548,\"steps\":14219}",
+    "update_time": 1788606106,
+    "watermark": 169578757882040,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "steps",
+    "time": 1788307200,
+    "value": "{\"calories\":593,\"distance\":5303,\"steps\":8821}",
+    "update_time": 1788606106,
+    "watermark": 169578757882041,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "steps",
+    "time": 1788220800,
+    "value": "{\"calories\":620,\"distance\":3575,\"steps\":5946}",
+    "update_time": 1788606106,
+    "watermark": 169578757882042,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "intensity",
+    "time": 1788220800,
+    "value": "{\"duration\":17}",
+    "update_time": 1788606106,
+    "watermark": 169578757882045,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "valid_stand",
+    "time": 1788307200,
+    "value": "{\"count\":14}",
+    "update_time": 1788606106,
+    "watermark": 169578757882046,
+    "source_sid_list": [
+      "953441174"
+    ]
+  },
+  {
+    "sid": "default",
+    "tag": "daily_report",
+    "key": "valid_stand",
+    "time": 1788220800,
+    "value": "{\"count\":3}",
+    "update_time": 1788606106,
+    "watermark": 169578757882047,
+    "source_sid_list": [
+      "953441174"
+    ]
+  }
+]

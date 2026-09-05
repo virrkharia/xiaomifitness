@@ -1,27 +1,37 @@
 // netlify/functions/pull-data.mjs
 //
-// Pulls steps + sleep from Mi Fitness's current backend (de.hlth.io.mi.com)
-// using Xiaomi's standard signed-request scheme (the same one used by Mi
-// Home, Mi Band, and other Xiaomi cloud services -- this is NOT specific to
-// this project; see PiotrMachowski/Xiaomi-cloud-tokens-extractor on GitHub
-// for the reference implementation this was ported from).
+// Pulls steps + sleep from Mi Fitness's backend (de.hlth.io.mi.com) using
+// Xiaomi's signed-request scheme (the same one used by Mi Home, Mi Band,
+// etc -- see PiotrMachowski/Xiaomi-cloud-tokens-extractor on GitHub for
+// the reference implementation this was ported from).
 //
-// This deliberately reuses an already-authenticated session (ssecurity +
-// cUserId + serviceToken captured once from your own phone/emulator)
-// rather than logging in -- see docs/capture-token.md. No login event
-// happens here, so there's nothing for Xiaomi's fraud detection to flag.
+// This reuses an already-authenticated session (ssecurity + cUserId +
+// serviceToken + phone_id captured once from your own phone/emulator --
+// see docs/capture-token.md) rather than logging in, so there's no login
+// event for Xiaomi's fraud detection to flag.
+//
+// It calls get_aggregated_fitness_data_by_watermark with tag=daily_report,
+// which returns per-day steps/sleep/calories entries. Results are paged
+// using an opaque "watermark" cursor: each call returns up to 50 entries
+// and the highest watermark seen becomes the starting point for the next
+// call. The last-seen watermark is stored in Blobs so each run only pulls
+// what's new since last time -- the very first run has no stored
+// watermark, so it starts at 0 and pulls your entire history.
 //
 // Required environment variables (set in Netlify site settings):
 //   MIFIT_SSECURITY     - captured from the sid=miothealth login response
 //   MIFIT_CUSERID       - captured from the same response / request cookies
 //   MIFIT_SERVICETOKEN  - captured from a de.hlth.io.mi.com request's Cookie header
+//   MIFIT_PHONE_ID      - captured from a get_aggregated_fitness_data_by_watermark request's decrypted body
 
 import crypto from "node:crypto";
 import zlib from "node:zlib";
 import { getStore } from "@netlify/blobs";
 
 const HOST = "de.hlth.io.mi.com";
-const PATH = "/app/v1/data/get_fitness_data_by_time";
+const PATH = "/app/v1/data/get_aggregated_fitness_data_by_watermark";
+const PAGE_LIMIT = 50;
+const MAX_PAGES = 40;
 
 // --- Xiaomi signing primitives (ported from Xiaomi-cloud-tokens-extractor) ---
 
@@ -86,20 +96,19 @@ function generateEncSignature(method, urlPath, signedNonceB64, params) {
   return crypto.createHash("sha1").update(parts.join("&"), "utf-8").digest("base64");
 }
 
-// --- Building and sending one signed request ---
+const USER_AGENT =
+  "Android-17-3.58.0-google-sdk_gphone16k_arm64-f9c4b013bd88d93b1ac929fc5cccbdb5-0d7f7f24c08a85419b2413702d0152e5";
 
-async function fetchFitnessData(ssecurity, cUserId, serviceToken, startTimeUnixSeconds) {
+async function fetchWatermarkPage(creds, watermark) {
+  const { ssecurity, cUserId, serviceToken, phoneId } = creds;
   const nonce = generateNonce();
   const nonceSigned = signedNonce(ssecurity, nonce);
 
   let params = {
-    data: JSON.stringify({ start_time: startTimeUnixSeconds, end_time: 0, reverse: true }),
+    data: JSON.stringify({ limit: PAGE_LIMIT, phone_id: phoneId, tag: "daily_report", watermark }),
   };
-
   params.rc4_hash__ = generateEncSignature("GET", PATH, nonceSigned, params);
-  for (const k of Object.keys(params)) {
-    params[k] = encryptRc4(nonceSigned, params[k]);
-  }
+  for (const k of Object.keys(params)) params[k] = encryptRc4(nonceSigned, params[k]);
   params.signature = generateEncSignature("GET", PATH, nonceSigned, params);
   params.ssecurity = ssecurity;
   params._nonce = nonce;
@@ -113,19 +122,16 @@ async function fetchFitnessData(ssecurity, cUserId, serviceToken, startTimeUnixS
       HandleParams: "true",
       region_tag: "de",
       Host: HOST,
+      "User-Agent": USER_AGENT,
     },
   });
 
   const bodyText = await res.text();
-
   if (!res.ok) {
     throw new Error(`Request failed: ${res.status} -- ${bodyText.slice(0, 300)}`);
   }
 
   const decrypted = decryptRc4(nonceSigned, bodyText.trim());
-
-  // Some Xiaomi endpoints gzip the payload before encrypting it -- try that
-  // first, fall back to plain text.
   let text;
   try {
     text = zlib.gunzipSync(decrypted).toString("utf-8");
@@ -133,42 +139,105 @@ async function fetchFitnessData(ssecurity, cUserId, serviceToken, startTimeUnixS
     text = decrypted.toString("utf-8");
   }
 
-  return JSON.parse(text);
+  const parsed = JSON.parse(text);
+  if (parsed.code !== 0) {
+    throw new Error(`API error ${parsed.code}: ${parsed.message}`);
+  }
+  return parsed.result?.data_list || [];
 }
 
-function formatDate(d) {
-  return d.toISOString().slice(0, 10);
+function unixToDateString(unixSeconds) {
+  return new Date(unixSeconds * 1000).toISOString().slice(0, 10);
+}
+
+function mergeEntriesIntoDays(entries, days) {
+  for (const entry of entries) {
+    if (entry.key !== "steps" && entry.key !== "sleep") continue;
+
+    let val;
+    try {
+      val = JSON.parse(entry.value);
+    } catch {
+      continue;
+    }
+
+    const date = unixToDateString(entry.time);
+    const existing = days[date] || {
+      date,
+      steps: 0,
+      distance_m: 0,
+      calories: 0,
+      sleep_total_min: 0,
+      sleep_deep_min: 0,
+      sleep_light_min: 0,
+      sleep_start: null,
+      sleep_end: null,
+    };
+
+    if (entry.key === "steps" && "steps" in val) {
+      existing.steps = val.steps || 0;
+      existing.distance_m = val.distance || 0;
+      existing.calories = val.calories || 0;
+    }
+
+    if (entry.key === "sleep" && "total_duration" in val) {
+      existing.sleep_total_min = val.total_duration || 0;
+      existing.sleep_deep_min = val.sleep_deep_duration || 0;
+      existing.sleep_light_min = val.sleep_light_duration || 0;
+    }
+
+    days[date] = existing;
+  }
 }
 
 export default async () => {
   const ssecurity = process.env.MIFIT_SSECURITY;
   const cUserId = process.env.MIFIT_CUSERID;
   const serviceToken = process.env.MIFIT_SERVICETOKEN;
+  const phoneId = process.env.MIFIT_PHONE_ID;
 
-  if (!ssecurity || !cUserId || !serviceToken) {
-    console.error("MIFIT_SSECURITY / MIFIT_CUSERID / MIFIT_SERVICETOKEN are not set");
+  if (!ssecurity || !cUserId || !serviceToken || !phoneId) {
+    console.error("MIFIT_SSECURITY / MIFIT_CUSERID / MIFIT_SERVICETOKEN / MIFIT_PHONE_ID are not set");
     return new Response("Missing credentials", { status: 500 });
   }
 
-  const startTime = Math.floor(Date.now() / 1000) - 7 * 24 * 60 * 60;
+  const creds = { ssecurity, cUserId, serviceToken, phoneId };
+  const store = getStore("mifit-data");
+
+  let watermark = (await store.get("watermark", { type: "text" })) || "0";
+  watermark = Number(watermark);
+
+  const existingArr = (await store.get("days", { type: "json" })) || [];
+  const days = Object.fromEntries(existingArr.map((d) => [d.date, d]));
+
+  let totalEntries = 0;
 
   try {
-    const data = await fetchFitnessData(ssecurity, cUserId, serviceToken, startTime);
+    for (let page = 0; page < MAX_PAGES; page++) {
+      const entries = await fetchWatermarkPage(creds, watermark);
+      if (!entries.length) break;
 
-    // First-run visibility: log the raw shape so we can confirm/adjust the
-    // parsing below against what this endpoint actually returns.
-    console.log("Raw decrypted response:", JSON.stringify(data).slice(0, 2000));
+      totalEntries += entries.length;
+      mergeEntriesIntoDays(entries, days);
 
-    // TODO once we've seen a real response: map `data` into per-day
-    // {date, steps, sleep_total_min, sleep_deep_min, sleep_light_min}
-    // objects and merge into the "days" key in Blobs, the same way the
-    // manual CSV importer does.
+      const maxWatermark = Math.max(...entries.map((e) => e.watermark || 0));
+      if (maxWatermark <= watermark) break; // safety: no progress
+      watermark = maxWatermark;
 
-    return new Response("OK -- check function logs for the raw response shape");
+      if (entries.length < PAGE_LIMIT) break; // last page
+      await new Promise((r) => setTimeout(r, 300)); // be polite between calls
+    }
   } catch (err) {
     console.error("Pull failed:", err.message);
     return new Response(`Pull failed: ${err.message}`, { status: 500 });
   }
+
+  const mergedArr = Object.values(days).sort((a, b) => a.date.localeCompare(b.date));
+  await store.setJSON("days", mergedArr);
+  await store.set("watermark", String(watermark));
+
+  console.log(`Pulled ${totalEntries} entries, store now has ${mergedArr.length} days, watermark=${watermark}`);
+  return new Response(`OK -- pulled ${totalEntries} entries, ${mergedArr.length} days total`);
 };
 
 export const config = {
