@@ -19,6 +19,7 @@
     --sleep-color: #8D7BC7;
     --sleep-deep: #5B4B8A;
     --sleep-light: #B7A8E8;
+    --sleep-rem: #C9A8D9;
     --hr-color: #B85C6B;
     --rhr-color: #D9A0A8;
     --intensity-color: #4E8C82;
@@ -344,12 +345,6 @@
 <main id="main">
   <div class="stats-row" id="statsRow"></div>
 
-  <div class="panel" id="glucoseIntradayPanel" style="display:none;">
-    <h2>Glucose</h2>
-    <p class="hint">Readings through the day &middot; shaded band is the 3.9&ndash;10.0 mmol/L target range</p>
-    <canvas id="glucoseIntradayChart"></canvas>
-  </div>
-
   <div class="panel">
     <h2>Steps</h2>
     <p class="hint">Daily step count &middot; click a bar for detail</p>
@@ -377,8 +372,13 @@
   </div>
   <div class="panel" id="glucoseTrendPanel">
     <h2>Glucose trend</h2>
-    <p class="hint">Average daily glucose &middot; imported separately from your Libre exports</p>
+    <p class="hint">Average daily glucose across the selected range &middot; imported separately from your Libre exports</p>
     <canvas id="glucoseTrendChart"></canvas>
+  </div>
+  <div class="panel" id="glucoseIntradayPanel" style="display:none;">
+    <h2>Glucose (day view)</h2>
+    <p class="hint">The full 24-hour reading curve for the single day you're viewing &middot; shaded thresholds mark the 3.9&ndash;10.0 mmol/L target range &middot; only shown in Day mode</p>
+    <canvas id="glucoseIntradayChart"></canvas>
   </div>
 </main>
 
@@ -446,7 +446,11 @@ function addDays(dateStr, n) {
 }
 
 function todayStr() {
-  return new Date().toISOString().slice(0, 10);
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`; // local date, not UTC -- avoids an off-by-one near midnight
 }
 
 function daysInMonth(year, month) {
@@ -501,7 +505,9 @@ const valueLabelsPlugin = {
       meta.data.forEach((el, i) => {
         const val = ds.data[i];
         if (val === null || val === undefined) return;
-        const text = opts.formatter ? opts.formatter(val) : val;
+        const displayVal = ds.valueLabelOverrideData ? ds.valueLabelOverrideData[i] : val;
+        if (displayVal === null || displayVal === undefined) return;
+        const text = opts.formatter ? opts.formatter(displayVal) : displayVal;
         ctx.fillText(text, el.x, el.y - 8);
       });
     });
@@ -583,7 +589,7 @@ function buildSeries() {
 
   const targets = dateList.map(d => (d ? dataByDate.get(d) || null : null));
 
-  return { labels, current, previous, targets };
+  return { labels, current, previous, targets, dateList };
 }
 
 // ---------- day detail modal (fitness data only) ----------
@@ -735,6 +741,17 @@ function setActiveButton(el) {
 }
 
 // ---------- glucose intraday chart (Day mode only) ----------
+function minutesSinceMidnight(timestamp) {
+  const d = new Date(timestamp);
+  return d.getHours() * 60 + d.getMinutes();
+}
+
+function minutesToHHMM(mins) {
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
 async function renderGlucoseIntraday() {
   const panel = document.getElementById('glucoseIntradayPanel');
 
@@ -760,24 +777,25 @@ async function renderGlucoseIntraday() {
   }
 
   panel.style.display = '';
-  const labels = readings.map(r => {
-    const d = new Date(r.timestamp);
-    return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
-  });
-  const values = readings.map(r => r.value);
-  const lowLine = values.map(() => 3.9);
-  const highLine = values.map(() => 10.0);
+
+  // Plot on a full 00:00-23:59 linear minute axis, regardless of when
+  // readings actually happened -- gaps in sensor coverage just show as
+  // gaps in the line, rather than shrinking the axis to fit the data.
+  const points = readings
+    .map(r => ({ x: minutesSinceMidnight(r.timestamp), y: r.value }))
+    .sort((a, b) => a.x - b.x);
+
+  const thresholdLine = (y) => ([{ x: 0, y }, { x: 1439, y }]);
 
   if (glucoseIntradayChart) glucoseIntradayChart.destroy();
   const ctx = document.getElementById('glucoseIntradayChart').getContext('2d');
   glucoseIntradayChart = new Chart(ctx, {
     type: 'line',
     data: {
-      labels,
       datasets: [
         {
           label: 'Low threshold',
-          data: lowLine,
+          data: thresholdLine(3.9),
           borderColor: getComputedStyle(document.documentElement).getPropertyValue('--glucose-low'),
           borderDash: [4, 4],
           pointRadius: 0,
@@ -785,7 +803,7 @@ async function renderGlucoseIntraday() {
         },
         {
           label: 'High threshold',
-          data: highLine,
+          data: thresholdLine(10.0),
           borderColor: getComputedStyle(document.documentElement).getPropertyValue('--glucose-high'),
           borderDash: [4, 4],
           pointRadius: 0,
@@ -793,7 +811,7 @@ async function renderGlucoseIntraday() {
         },
         {
           label: 'Glucose',
-          data: values,
+          data: points,
           borderColor: getComputedStyle(document.documentElement).getPropertyValue('--glucose-color'),
           backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--glucose-color-soft'),
           fill: false,
@@ -804,13 +822,21 @@ async function renderGlucoseIntraday() {
     },
     options: {
       responsive: true,
+      layout: { padding: { top: 24 } },
+      parsing: false,
       plugins: {
         legend: { display: false },
       },
       scales: {
         x: {
+          type: 'linear',
+          min: 0,
+          max: 1439,
           grid: { display: false },
-          ticks: { maxTicksLimit: 12 },
+          ticks: {
+            stepSize: 120,
+            callback: (val) => minutesToHHMM(val),
+          },
         },
         y: {
           title: { display: true, text: 'mmol/L' },
@@ -823,7 +849,7 @@ async function renderGlucoseIntraday() {
 
 // ---------- rendering ----------
 function render() {
-  const { labels, current, previous, targets } = buildSeries();
+  const { labels, current, previous, targets, dateList } = buildSeries();
   clickTargets = targets;
   updateNavControls();
 
@@ -901,6 +927,7 @@ function render() {
     data: { labels, datasets: buildBarDatasets('steps', '--steps-color', '--steps-color-soft', 'Steps') },
     options: {
       responsive: true,
+      layout: { padding: { top: 24 } },
       onClick: (evt, elements) => onChartClick(elements),
       plugins: {
         legend: { display: !!previous, position: 'top', align: 'end', labels: { boxWidth: 12, font: { size: 12 } } },
@@ -913,39 +940,88 @@ function render() {
     }
   });
 
-  // Sleep -- total hours only, so the number-at-top-of-bar is simple and readable
+  // Sleep -- full deep/light/REM breakdown when not comparing (gives real
+  // hover detail per stage); falls back to a single total-hours bar when
+  // comparison mode is on, since stacking + a previous-period overlay
+  // together was too much to read at once.
   const sleepCtx = document.getElementById('sleepChart').getContext('2d');
-  const sleepDatasets = [{
-    label: 'Total sleep',
-    data: current.sleep_total,
-    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--sleep-light'),
-    borderColor: getComputedStyle(document.documentElement).getPropertyValue('--sleep-color'),
-    borderWidth: 1.5,
-    borderRadius: 4,
-    maxBarThickness: 28,
-    valueLabelColor: '#EDEBF6'
-  }];
-  if (previous) {
-    sleepDatasets.unshift({
-      label: 'Total sleep (previous)',
-      data: previous.sleep_total,
-      backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--prev-fill-night'),
-      borderColor: getComputedStyle(document.documentElement).getPropertyValue('--prev-border-night'),
-      borderWidth: 1.5,
-      borderRadius: 4,
-      maxBarThickness: 28,
-      hideValueLabel: true
-    });
+  let sleepDatasets;
+
+  if (!previous) {
+    const deepHrs = dateList.map(d => { const day = d ? dataByDate.get(d) : null; return day ? (day.sleep_deep_min || 0) / 60 : null; });
+    const lightHrs = dateList.map(d => { const day = d ? dataByDate.get(d) : null; return day ? (day.sleep_light_min || 0) / 60 : null; });
+    const remHrs = dateList.map(d => { const day = d ? dataByDate.get(d) : null; return day ? (day.raw?.sleep?.sleep_rem_duration || 0) / 60 : null; });
+    const totalHrs = current.sleep_total;
+
+    sleepDatasets = [
+      {
+        label: 'Deep sleep',
+        data: deepHrs,
+        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--sleep-deep'),
+        stack: 'sleep',
+        borderRadius: 4,
+        maxBarThickness: 28,
+        hideValueLabel: true
+      },
+      {
+        label: 'Light sleep',
+        data: lightHrs,
+        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--sleep-light'),
+        stack: 'sleep',
+        borderRadius: 4,
+        maxBarThickness: 28,
+        hideValueLabel: true
+      },
+      {
+        // Drawn last so it sits on top of the stack -- its element position
+        // is the top of the whole bar, which is where we want the *total*
+        // sleep number to appear (not this segment's own REM value).
+        label: 'REM sleep',
+        data: remHrs,
+        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--sleep-rem'),
+        stack: 'sleep',
+        borderRadius: 4,
+        maxBarThickness: 28,
+        valueLabelColor: '#EDEBF6',
+        valueLabelOverrideData: totalHrs
+      }
+    ];
+  } else {
+    sleepDatasets = [
+      {
+        label: 'Total sleep (previous)',
+        data: previous.sleep_total,
+        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--prev-fill-night'),
+        borderColor: getComputedStyle(document.documentElement).getPropertyValue('--prev-border-night'),
+        borderWidth: 1.5,
+        borderRadius: 4,
+        maxBarThickness: 28,
+        hideValueLabel: true
+      },
+      {
+        label: 'Total sleep',
+        data: current.sleep_total,
+        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--sleep-light'),
+        borderColor: getComputedStyle(document.documentElement).getPropertyValue('--sleep-color'),
+        borderWidth: 1.5,
+        borderRadius: 4,
+        maxBarThickness: 28,
+        valueLabelColor: '#EDEBF6'
+      }
+    ];
   }
+
   sleepChart = new Chart(sleepCtx, {
     type: 'bar',
     data: { labels, datasets: sleepDatasets },
     options: {
       responsive: true,
+      layout: { padding: { top: 24 } },
       onClick: (evt, elements) => onChartClick(elements),
+      interaction: { mode: 'index', intersect: false },
       plugins: {
         legend: {
-          display: !!previous,
+          display: true,
           position: 'top', align: 'end',
           labels: { color: '#EDEBF6', boxWidth: 12, font: { size: 12 } }
         },
@@ -955,6 +1031,7 @@ function render() {
         x: { grid: { display: false }, ticks: { color: '#B7BAD1' } },
         y: {
           beginAtZero: true,
+          stacked: true,
           title: { display: true, text: 'Hours', color: '#B7BAD1' },
           grid: { color: 'rgba(255,255,255,0.08)' },
           ticks: { color: '#B7BAD1' }
@@ -991,6 +1068,7 @@ function render() {
     data: { labels, datasets: hrDatasets },
     options: {
       responsive: true,
+      layout: { padding: { top: 24 } },
       onClick: (evt, elements) => onChartClick(elements),
       plugins: {
         legend: { display: !!previous, position: 'top', align: 'end', labels: { boxWidth: 12, font: { size: 12 } } },
@@ -1010,6 +1088,7 @@ function render() {
     data: { labels, datasets: buildBarDatasets('intensity', '--intensity-color', '--intensity-color-soft', 'Minutes') },
     options: {
       responsive: true,
+      layout: { padding: { top: 24 } },
       onClick: (evt, elements) => onChartClick(elements),
       plugins: {
         legend: { display: !!previous, position: 'top', align: 'end', labels: { boxWidth: 12, font: { size: 12 } } },
@@ -1029,6 +1108,7 @@ function render() {
     data: { labels, datasets: buildBarDatasets('standing', '--stand-color', '--stand-color-soft', 'Hours') },
     options: {
       responsive: true,
+      layout: { padding: { top: 24 } },
       onClick: (evt, elements) => onChartClick(elements),
       plugins: {
         legend: { display: !!previous, position: 'top', align: 'end', labels: { boxWidth: 12, font: { size: 12 } } },
@@ -1070,6 +1150,7 @@ function render() {
       data: { labels, datasets: glucoseDatasets },
       options: {
         responsive: true,
+      layout: { padding: { top: 24 } },
         plugins: {
           legend: { display: !!previous, position: 'top', align: 'end', labels: { boxWidth: 12, font: { size: 12 } } },
           valueLabels: { enabled: true, formatter: v => v.toFixed(1) }
