@@ -151,8 +151,19 @@ function unixToDateString(unixSeconds) {
 }
 
 function mergeEntriesIntoDays(entries, days) {
+  const trackedKeys = new Set([
+    "steps",
+    "sleep",
+    "heart_rate",
+    "intensity",
+    "valid_stand",
+    "calories",
+    "stress",
+    "spo2",
+  ]);
+
   for (const entry of entries) {
-    if (entry.key !== "steps" && entry.key !== "sleep") continue;
+    if (!trackedKeys.has(entry.key)) continue;
 
     let val;
     try {
@@ -172,7 +183,14 @@ function mergeEntriesIntoDays(entries, days) {
       sleep_light_min: 0,
       sleep_start: null,
       sleep_end: null,
+      raw: {},
     };
+
+    // Keep the full raw value too, for drill-down and future charts --
+    // never lose data the API gave us just because today's summary
+    // view doesn't use a field yet.
+    if (!existing.raw) existing.raw = {};
+    existing.raw[entry.key] = val;
 
     if (entry.key === "steps" && "steps" in val) {
       existing.steps = val.steps || 0;
@@ -204,7 +222,13 @@ export default async () => {
   const creds = { ssecurity, cUserId, serviceToken, phoneId };
   const store = getStore("mifit-data");
 
-  let watermark = (await store.get("watermark", { type: "text" })) || "0";
+  // Set MIFIT_RESET=true as a Netlify env var to force a full re-pull
+  // from the beginning (e.g. after adding a new tracked field) -- set
+  // it back to false/unset afterwards so subsequent runs stay
+  // incremental again.
+  const forceReset = process.env.MIFIT_RESET === "true";
+
+  let watermark = forceReset ? "0" : (await store.get("watermark", { type: "text" })) || "0";
   watermark = Number(watermark);
 
   const existingArr = (await store.get("days", { type: "json" })) || [];

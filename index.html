@@ -168,6 +168,75 @@
     color: #B7BAD1;
     font-size: 13px;
   }
+
+  canvas { cursor: pointer; }
+
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 20, 25, 0.55);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 50;
+  }
+
+  .modal-backdrop.open { display: flex; }
+
+  .modal {
+    background: #FBF8F1;
+    color: var(--ink);
+    border-radius: 18px;
+    max-width: 480px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 28px;
+    position: relative;
+  }
+
+  .modal h3 {
+    font-family: 'Newsreader', serif;
+    font-weight: 500;
+    font-size: 26px;
+    margin: 0 0 18px;
+  }
+
+  .modal .close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--ink-soft);
+    line-height: 1;
+  }
+
+  .modal .metric-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .modal .metric-row:last-child { border-bottom: none; }
+
+  .modal .metric-label { color: var(--ink-soft); font-size: 14px; }
+  .modal .metric-value { font-weight: 600; font-size: 15px; }
+
+  .modal .section-title {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ink-soft);
+    margin: 20px 0 4px;
+  }
+
+  .modal .empty-metric { color: var(--ink-soft); font-size: 13px; font-style: italic; }
 </style>
 </head>
 <body>
@@ -175,6 +244,7 @@
 <header>
   <h1>Steps &amp; sleep</h1>
   <p class="subtitle">A running record of daily activity and sleep, pulled automatically each morning.</p>
+  <p class="subtitle" style="margin-top: 6px;"><a href="/upload.html" style="color: inherit;">Import data manually &rarr;</a></p>
 </header>
 
 <div class="range-picker" id="rangePicker">
@@ -188,17 +258,25 @@
   <div class="stats-row" id="statsRow"></div>
   <div class="panel">
     <h2>Steps</h2>
-    <p class="hint">Daily step count</p>
+    <p class="hint">Daily step count &middot; click a bar for detail</p>
     <canvas id="stepsChart"></canvas>
   </div>
   <div class="panel night">
     <h2>Sleep</h2>
-    <p class="hint">Deep and light sleep, hours per night</p>
+    <p class="hint">Deep and light sleep, hours per night &middot; click a bar for detail</p>
     <canvas id="sleepChart"></canvas>
   </div>
 </main>
 
 <footer>Data pulled directly from Mi Fitness. Updated daily.</footer>
+
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <button class="close-btn" id="modalClose">&times;</button>
+    <h3 id="modalTitle"></h3>
+    <div id="modalBody"></div>
+  </div>
+</div>
 
 <script>
 let allData = [];
@@ -215,8 +293,89 @@ function average(arr) {
   return vals.reduce((a, b) => a + b, 0) / vals.length;
 }
 
+function minutesToHrsMin(min) {
+  if (!min) return '0m';
+  const h = Math.floor(min / 60);
+  const m = Math.round(min % 60);
+  return h ? `${h}h ${m}m` : `${m}m`;
+}
+
+function fmtTime(unixSeconds) {
+  if (!unixSeconds) return null;
+  return new Date(unixSeconds * 1000).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
+}
+
+function row(label, value) {
+  if (value === null || value === undefined || value === '') return '';
+  return `<div class="metric-row"><span class="metric-label">${label}</span><span class="metric-value">${value}</span></div>`;
+}
+
+function showDayDetail(day) {
+  const raw = day.raw || {};
+  const hr = raw.heart_rate;
+  const intensity = raw.intensity;
+  const stand = raw.valid_stand;
+  const stress = raw.stress;
+  const spo2 = raw.spo2;
+
+  document.getElementById('modalTitle').textContent = new Date(day.date + 'T00:00:00')
+    .toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+
+  let html = '';
+
+  html += '<div class="section-title">Activity</div>';
+  html += row('Steps', (day.steps || 0).toLocaleString());
+  html += row('Distance', day.distance_m ? `${(day.distance_m / 1000).toFixed(2)} km` : null);
+  html += row('Calories', day.calories || null);
+  html += row('Standing hours', stand ? stand.count : null);
+  html += row('Intensity minutes', intensity ? intensity.duration : null);
+
+  html += '<div class="section-title">Sleep</div>';
+  if (day.sleep_total_min) {
+    html += row('Total sleep', minutesToHrsMin(day.sleep_total_min));
+    html += row('Deep sleep', minutesToHrsMin(day.sleep_deep_min));
+    html += row('Light sleep', minutesToHrsMin(day.sleep_light_min));
+    if (raw.sleep) {
+      html += row('Sleep score', raw.sleep.sleep_score);
+      html += row('Avg. heart rate (sleep)', raw.sleep.avg_hr ? `${raw.sleep.avg_hr} bpm` : null);
+    }
+  } else {
+    html += '<div class="empty-metric">No sleep data for this day</div>';
+  }
+
+  html += '<div class="section-title">Heart rate</div>';
+  if (hr) {
+    html += row('Average', hr.avg_hr ? `${hr.avg_hr} bpm` : null);
+    html += row('Resting', hr.avg_rhr ? `${hr.avg_rhr} bpm` : null);
+    html += row('Range', hr.min_hr && hr.max_hr ? `${hr.min_hr}–${hr.max_hr} bpm` : null);
+  } else {
+    html += '<div class="empty-metric">No heart rate data for this day</div>';
+  }
+
+  if (stress || spo2) {
+    html += '<div class="section-title">Other</div>';
+    if (stress) html += row('Avg. stress', stress.avg_stress);
+    if (spo2) html += row('Avg. blood oxygen', spo2.avg_spo2 ? `${spo2.avg_spo2}%` : null);
+  }
+
+  document.getElementById('modalBody').innerHTML = html;
+  document.getElementById('modalBackdrop').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modalBackdrop').classList.remove('open');
+}
+
+document.getElementById('modalClose').addEventListener('click', closeModal);
+document.getElementById('modalBackdrop').addEventListener('click', (e) => {
+  if (e.target.id === 'modalBackdrop') closeModal();
+});
+
+let currentFiltered = [];
+
 function render(days) {
   const filtered = days === 0 ? allData : allData.slice(-days);
+  currentFiltered = filtered;
   const labels = filtered.map(d => fmtDate(d.date));
 
   const steps = filtered.map(d => d.steps || 0);
@@ -267,6 +426,9 @@ function render(days) {
     },
     options: {
       responsive: true,
+      onClick: (evt, elements) => {
+        if (elements.length) showDayDetail(currentFiltered[elements[0].index]);
+      },
       plugins: { legend: { display: false } },
       scales: {
         x: { grid: { display: false } },
@@ -301,6 +463,9 @@ function render(days) {
     },
     options: {
       responsive: true,
+      onClick: (evt, elements) => {
+        if (elements.length) showDayDetail(currentFiltered[elements[0].index]);
+      },
       plugins: {
         legend: {
           position: 'top',
