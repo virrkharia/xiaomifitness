@@ -34,6 +34,8 @@
     --glucose-color-soft: rgba(58, 125, 181, 0.18);
     --glucose-low: #C97A2B;
     --glucose-high: #B85C6B;
+    --zone-under: #C25450;
+    --zone-hit: #5A9B6E;
     --prev-fill: rgba(34, 38, 47, 0.10);
     --prev-border: rgba(34, 38, 47, 0.32);
     --prev-fill-night: rgba(255, 255, 255, 0.08);
@@ -270,6 +272,30 @@
   .manual-entry button:disabled { opacity: 0.5; cursor: default; }
   .manual-entry .status { font-size: 13px; color: var(--ink-soft); width: 100%; }
 
+  .habits-table { border-collapse: collapse; width: 100%; margin-top: 8px; font-size: 13px; }
+  .habits-table th, .habits-table td { padding: 6px 8px; text-align: center; border-bottom: 1px solid var(--line); }
+  .habits-table th:first-child, .habits-table td:first-child { text-align: left; }
+  .habit-tick {
+    width: 26px; height: 26px;
+    border-radius: 6px;
+    border: 1px solid var(--line);
+    background: white;
+    cursor: pointer;
+    color: var(--zone-hit);
+    font-weight: 700;
+  }
+  .habit-tick.done { background: var(--zone-hit); color: white; border-color: var(--zone-hit); }
+
+  .sleep-window-strip { display: flex; gap: 3px; margin-top: 10px; }
+  .sleep-window-dot {
+    flex: 1;
+    height: 8px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.12);
+  }
+  .sleep-window-dot.hit { background: var(--zone-hit); }
+  .sleep-window-dot.miss { background: var(--zone-under); }
+
   .empty-state { text-align: center; padding: 60px 24px; color: var(--ink-soft); }
   .empty-state code { background: rgba(0,0,0,0.06); padding: 2px 6px; border-radius: 4px; }
 
@@ -391,6 +417,7 @@
     <h2>Sleep</h2>
     <p class="hint">Total hours slept &middot; click a bar for detail</p>
     <canvas id="sleepChart"></canvas>
+    <div class="sleep-window-strip" id="sleepWindowStrip"></div>
   </div>
   <div class="panel" id="heartRatePanel">
     <h2>Heart rate</h2>
@@ -426,6 +453,64 @@
     <h2>Glucose (day view)</h2>
     <p class="hint">The full 24-hour reading curve for the single day you're viewing &middot; dashed lines mark the 3.9&ndash;10.0 mmol/L target range &middot; only shown in Day mode</p>
     <canvas id="glucoseIntradayChart"></canvas>
+  </div>
+
+  <div class="manual-entry" id="targetsPanel">
+    <h2>Weekly targets</h2>
+    <p class="hint" style="width:100%; margin:-6px 0 4px;">Set once, carries forward automatically until you change it</p>
+    <label>Week starts
+      <select id="weekStartSelect">
+        <option value="1">Monday</option>
+        <option value="0">Sunday</option>
+      </select>
+    </label>
+    <label>Week
+      <input type="date" id="targetWeekPicker">
+    </label>
+    <label>Steps floor
+      <input type="number" id="targetStepsFloor" placeholder="e.g. 5000">
+    </label>
+    <label>Steps target
+      <input type="number" id="targetStepsTarget" placeholder="e.g. 8000">
+    </label>
+    <label>Sleep target (hours)
+      <input type="number" step="0.1" id="targetSleepHours" placeholder="e.g. 7.5">
+    </label>
+    <label>Sleep window start
+      <input type="time" id="targetSleepStart">
+    </label>
+    <label>Sleep window end
+      <input type="time" id="targetSleepEnd">
+    </label>
+    <button id="saveTargetsBtn">Save this week's targets</button>
+    <div class="status" id="targetsStatus"></div>
+  </div>
+
+  <div class="manual-entry" id="habitsPanel">
+    <h2>Habits</h2>
+    <p class="hint" style="width:100%; margin:-6px 0 4px;">Supplements, morning/evening routines, gym, physio &mdash; whatever you and your coach have agreed</p>
+    <label>Name
+      <input type="text" id="habitName" placeholder="e.g. Magnesium">
+    </label>
+    <label>Category
+      <select id="habitCategory">
+        <option value="supplement">Supplement</option>
+        <option value="morning">Morning habit</option>
+        <option value="evening">Evening habit</option>
+        <option value="other">Other</option>
+      </select>
+    </label>
+    <label>Frequency
+      <select id="habitFreqType">
+        <option value="daily">Daily</option>
+        <option value="weekly">X times per week</option>
+      </select>
+    </label>
+    <label id="habitFreqCountWrap" style="display:none;">Times / week
+      <input type="number" id="habitFreqCount" min="1" max="7" value="3">
+    </label>
+    <button id="addHabitBtn">Add habit</button>
+    <div style="width:100%; overflow-x:auto;" id="habitsGridBody"></div>
   </div>
 
   <div class="manual-entry">
@@ -499,7 +584,14 @@ const PANEL_CONFIG = [
   { id: 'glucose_trend', panelEl: 'glucoseTrendPanel', label: 'Glucose trend' },
   { id: 'glucose_intraday', panelEl: 'glucoseIntradayPanel', label: 'Glucose day view' },
 ];
-let visiblePanels = new Set(PANEL_CONFIG.map(p => p.id));
+let visiblePanels = new Set(
+  PANEL_CONFIG.map(p => p.id).filter(id => !['distance', 'calories', 'intensity', 'standing'].includes(id))
+);
+
+let weekStartDay = 1; // 0=Sunday, 1=Monday
+let targetsWeekly = [];
+let habitDefinitions = [];
+let habitCompletions = {};
 
 // ---------- small helpers ----------
 function fmtDate(iso) {
@@ -547,6 +639,46 @@ function daysInMonth(year, month) {
 
 function monthLabel(year, month) {
   return new Date(year, month - 1, 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+}
+
+// ---------- weekly targets ----------
+function computeWeekStart(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  const day = d.getDay(); // 0=Sun..6=Sat
+  const diff = (day - weekStartDay + 7) % 7;
+  d.setDate(d.getDate() - diff);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function getTargetForDate(dateStr) {
+  if (!dateStr) return null;
+  const ws = computeWeekStart(dateStr);
+  let best = null;
+  for (const w of targetsWeekly) {
+    if (w.week_start <= ws && (!best || w.week_start > best.week_start)) best = w;
+  }
+  return best;
+}
+
+function timeToMinutes(t) {
+  const [h, m] = t.split(':').map(Number);
+  return h * 60 + m;
+}
+
+function isTimeInWindow(time, start, end) {
+  if (!time || !start || !end) return null;
+  const t = timeToMinutes(time), s = timeToMinutes(start), e = timeToMinutes(end);
+  if (s <= e) return t >= s && t <= e;
+  return t >= s || t <= e; // window crosses midnight
+}
+
+function getMainSleepBedtime(day) {
+  const segs = day?.raw?.sleep?.segment_details;
+  if (!segs || !segs.length) return null;
+  const main = segs.reduce((a, b) => ((b.duration || 0) > (a.duration || 0) ? b : a));
+  if (!main.bedtime) return null;
+  const d = new Date(main.bedtime * 1000);
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 }
 
 function getMetricValue(day, key) {
@@ -843,6 +975,58 @@ function renderFilterChips() {
   });
 }
 
+// ---------- habits grid ----------
+function renderHabitsGrid(labels, dateList) {
+  const container = document.getElementById('habitsGridBody');
+  const active = habitDefinitions.filter(h => h.active !== false);
+
+  if (!active.length) {
+    container.innerHTML = '<p class="hint">No habits yet -- add one above.</p>';
+    return;
+  }
+
+  let html = '<table class="habits-table"><thead><tr><th>Habit</th>';
+  labels.forEach(l => { html += `<th>${l}</th>`; });
+  html += '<th>Adherence</th></tr></thead><tbody>';
+
+  active.forEach(h => {
+    html += `<tr><td>${h.name}</td>`;
+    let hitCount = 0, totalCount = 0;
+    dateList.forEach(d => {
+      if (!d) { html += '<td></td>'; return; }
+      const done = !!(habitCompletions[h.id] && habitCompletions[h.id][d]);
+      totalCount++;
+      if (done) hitCount++;
+      html += `<td><button class="habit-tick ${done ? 'done' : ''}" data-habit="${h.id}" data-date="${d}">${done ? '&#10003;' : ''}</button></td>`;
+    });
+    const freqNote = h.frequency?.type === 'weekly' ? ` (target ${h.frequency.count}/wk)` : '';
+    html += `<td>${hitCount}/${totalCount}${freqNote}</td></tr>`;
+  });
+
+  html += '</tbody></table>';
+  container.innerHTML = html;
+
+  container.querySelectorAll('.habit-tick').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.habit, date = btn.dataset.date;
+      const newState = !btn.classList.contains('done');
+      btn.disabled = true;
+      try {
+        await fetch('/api/habits', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'toggle', id, date, completed: newState }),
+        });
+        if (!habitCompletions[id]) habitCompletions[id] = {};
+        if (newState) habitCompletions[id][date] = true;
+        else delete habitCompletions[id][date];
+      } catch (e) {}
+      btn.disabled = false;
+      renderHabitsGrid(labels, dateList);
+    });
+  });
+}
+
 // ---------- glucose intraday chart (Day mode only) ----------
 function minutesSinceMidnight(timestamp) {
   const d = new Date(timestamp);
@@ -1018,17 +1202,67 @@ function render() {
     return datasets;
   }
 
-  // Steps
+  // Steps -- bar color reflects which zone the day landed in (under floor /
+  // between floor and target / at-or-above target), plus reference lines
+  // for whichever targets are set across the visible weeks.
   const stepsCtx = document.getElementById('stepsChart').getContext('2d');
+
+  const stepsSoft = getComputedStyle(document.documentElement).getPropertyValue('--steps-color-soft');
+  const stepsSolid = getComputedStyle(document.documentElement).getPropertyValue('--steps-color');
+  const underColor = getComputedStyle(document.documentElement).getPropertyValue('--zone-under');
+  const hitColor = getComputedStyle(document.documentElement).getPropertyValue('--zone-hit');
+
+  const floorArr = [], targetArr = [];
+  let anyStepsTarget = false;
+  const stepsBg = [], stepsBorder = [];
+
+  dateList.forEach((d, i) => {
+    const t = getTargetForDate(d);
+    const floor = t?.steps_floor ?? null;
+    const target = t?.steps_target ?? null;
+    floorArr.push(floor);
+    targetArr.push(target);
+    if (floor != null || target != null) anyStepsTarget = true;
+
+    const val = current.steps[i];
+    if (val === null || previous) { stepsBg.push(stepsSoft); stepsBorder.push(stepsSolid); return; }
+    if (floor != null && val < floor) { stepsBg.push(underColor); stepsBorder.push(underColor); }
+    else if (target != null && val >= target) { stepsBg.push(hitColor); stepsBorder.push(hitColor); }
+    else { stepsBg.push(stepsSoft); stepsBorder.push(stepsSolid); }
+  });
+
+  const stepsDatasets = buildBarDatasets('steps', '--steps-color', '--steps-color-soft', 'Steps');
+  if (!previous) {
+    // last dataset is the "current" one (buildBarDatasets puts current last)
+    stepsDatasets[stepsDatasets.length - 1].backgroundColor = stepsBg;
+    stepsDatasets[stepsDatasets.length - 1].borderColor = stepsBorder;
+  }
+  if (anyStepsTarget) {
+    if (floorArr.some(v => v != null)) {
+      stepsDatasets.push({
+        type: 'line', label: 'Floor', data: floorArr,
+        borderColor: underColor, borderDash: [4, 4], stepped: true,
+        pointRadius: 0, borderWidth: 1.5, hideValueLabel: true
+      });
+    }
+    if (targetArr.some(v => v != null)) {
+      stepsDatasets.push({
+        type: 'line', label: 'Target', data: targetArr,
+        borderColor: hitColor, borderDash: [4, 4], stepped: true,
+        pointRadius: 0, borderWidth: 1.5, hideValueLabel: true
+      });
+    }
+  }
+
   stepsChart = new Chart(stepsCtx, {
     type: 'bar',
-    data: { labels, datasets: buildBarDatasets('steps', '--steps-color', '--steps-color-soft', 'Steps') },
+    data: { labels, datasets: stepsDatasets },
     options: {
       responsive: true,
       layout: { padding: { top: 24 } },
       onClick: (evt, elements) => onChartClick(elements),
       plugins: {
-        legend: { display: !!previous, position: 'top', align: 'end', labels: { boxWidth: 12, font: { size: 12 } } },
+        legend: { display: !!previous || anyStepsTarget, position: 'top', align: 'end', labels: { boxWidth: 12, font: { size: 12 } } },
         valueLabels: { enabled: true, formatter: v => Math.round(v).toLocaleString() }
       },
       scales: {
@@ -1107,6 +1341,20 @@ function render() {
     ];
   }
 
+  // Sleep target reference line, using each date's active target (steps
+  // through the carry-forward lookup the same way the Steps chart does)
+  const sleepTargetArr = dateList.map(d => {
+    const t = getTargetForDate(d);
+    return t?.sleep_target_min ? t.sleep_target_min / 60 : null;
+  });
+  if (sleepTargetArr.some(v => v != null)) {
+    sleepDatasets.push({
+      type: 'line', label: 'Sleep target', data: sleepTargetArr,
+      borderColor: '#EDEBF6', borderDash: [4, 4], stepped: true,
+      pointRadius: 0, borderWidth: 1.5, hideValueLabel: true
+    });
+  }
+
   sleepChart = new Chart(sleepCtx, {
     type: 'bar',
     data: { labels, datasets: sleepDatasets },
@@ -1130,6 +1378,25 @@ function render() {
       }
     }
   });
+
+  // Sleep window hit/miss strip -- a row of dots under the sleep chart,
+  // one per visible day, showing whether bedtime fell inside the target
+  // window for that week.
+  const windowStrip = document.getElementById('sleepWindowStrip');
+  const anyWindowTarget = dateList.some(d => { const t = getTargetForDate(d); return t?.sleep_window_start && t?.sleep_window_end; });
+  if (anyWindowTarget) {
+    windowStrip.innerHTML = dateList.map(d => {
+      if (!d) return '<div class="sleep-window-dot"></div>';
+      const t = getTargetForDate(d);
+      const day = dataByDate.get(d);
+      const bedtime = getMainSleepBedtime(day);
+      if (!t?.sleep_window_start || !t?.sleep_window_end || !bedtime) return '<div class="sleep-window-dot"></div>';
+      const hit = isTimeInWindow(bedtime, t.sleep_window_start, t.sleep_window_end);
+      return `<div class="sleep-window-dot ${hit ? 'hit' : 'miss'}" title="Bedtime ${bedtime}"></div>`;
+    }).join('');
+  } else {
+    windowStrip.innerHTML = '';
+  }
 
   // Heart rate
   const hrDatasets = [{
@@ -1284,6 +1551,7 @@ function render() {
     });
   }
 
+  renderHabitsGrid(labels, dateList);
   renderGlucoseIntraday();
 }
 
@@ -1349,6 +1617,34 @@ async function loadAllData() {
       glucoseByDate = new Map(glucoseDaily.map(d => [d.date, d]));
     }
   } catch (e) {}
+
+  try {
+    const tRes = await fetch('/api/targets', { cache: 'no-store' });
+    if (tRes.ok) {
+      const t = await tRes.json();
+      weekStartDay = t.weekStartDay ?? 1;
+      targetsWeekly = t.weekly || [];
+    }
+  } catch (e) {}
+
+  try {
+    const hRes = await fetch('/api/habits', { cache: 'no-store' });
+    if (hRes.ok) {
+      const h = await hRes.json();
+      habitDefinitions = h.definitions || [];
+      habitCompletions = h.completions || {};
+    }
+  } catch (e) {}
+}
+
+// ---------- targets form ----------
+function loadTargetFormForWeek(weekStart) {
+  const active = getTargetForDate(weekStart);
+  document.getElementById('targetStepsFloor').value = active?.steps_floor ?? '';
+  document.getElementById('targetStepsTarget').value = active?.steps_target ?? '';
+  document.getElementById('targetSleepHours').value = active?.sleep_target_min ? active.sleep_target_min / 60 : '';
+  document.getElementById('targetSleepStart').value = active?.sleep_window_start ?? '';
+  document.getElementById('targetSleepEnd').value = active?.sleep_window_end ?? '';
 }
 
 // ---------- init ----------
@@ -1405,6 +1701,92 @@ async function init() {
 
   document.getElementById('manualSubmit').addEventListener('click', submitManualEntry);
   document.getElementById('manualDate').value = todayStr();
+
+  // Weekly targets wiring
+  document.getElementById('weekStartSelect').value = String(weekStartDay);
+  const initialWeekStart = computeWeekStart(todayStr());
+  document.getElementById('targetWeekPicker').value = initialWeekStart;
+  loadTargetFormForWeek(initialWeekStart);
+
+  document.getElementById('weekStartSelect').addEventListener('change', async (e) => {
+    weekStartDay = parseInt(e.target.value, 10);
+    try {
+      await fetch('/api/targets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'config', weekStartDay }),
+      });
+    } catch (err) {}
+    const snapped = computeWeekStart(document.getElementById('targetWeekPicker').value || todayStr());
+    document.getElementById('targetWeekPicker').value = snapped;
+    loadTargetFormForWeek(snapped);
+    render();
+  });
+
+  document.getElementById('targetWeekPicker').addEventListener('change', (e) => {
+    const snapped = computeWeekStart(e.target.value);
+    e.target.value = snapped;
+    loadTargetFormForWeek(snapped);
+  });
+
+  document.getElementById('saveTargetsBtn').addEventListener('click', async () => {
+    const weekStart = document.getElementById('targetWeekPicker').value || computeWeekStart(todayStr());
+    const status = document.getElementById('targetsStatus');
+    const floor = document.getElementById('targetStepsFloor').value;
+    const target = document.getElementById('targetStepsTarget').value;
+    const sleepHrs = document.getElementById('targetSleepHours').value;
+    const winStart = document.getElementById('targetSleepStart').value;
+    const winEnd = document.getElementById('targetSleepEnd').value;
+
+    const payload = { type: 'weekly', week_start: weekStart };
+    if (floor !== '') payload.steps_floor = Number(floor);
+    if (target !== '') payload.steps_target = Number(target);
+    if (sleepHrs !== '') payload.sleep_target_min = Number(sleepHrs) * 60;
+    if (winStart) payload.sleep_window_start = winStart;
+    if (winEnd) payload.sleep_window_end = winEnd;
+
+    status.textContent = 'Saving...';
+    try {
+      await fetch('/api/targets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await (await fetch('/api/targets', { cache: 'no-store' })).json();
+      weekStartDay = data.weekStartDay;
+      targetsWeekly = data.weekly;
+      status.textContent = 'Saved.';
+      render();
+    } catch (err) {
+      status.textContent = 'Failed: ' + err.message;
+    }
+  });
+
+  // Habits wiring
+  document.getElementById('habitFreqType').addEventListener('change', (e) => {
+    document.getElementById('habitFreqCountWrap').style.display = e.target.value === 'weekly' ? 'flex' : 'none';
+  });
+
+  document.getElementById('addHabitBtn').addEventListener('click', async () => {
+    const name = document.getElementById('habitName').value.trim();
+    if (!name) return;
+    const category = document.getElementById('habitCategory').value;
+    const freqType = document.getElementById('habitFreqType').value;
+    const freqCount = parseInt(document.getElementById('habitFreqCount').value, 10) || 1;
+    const frequency = freqType === 'weekly' ? { type: 'weekly', count: freqCount } : { type: 'daily' };
+
+    try {
+      const res = await fetch('/api/habits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'create', name, category, frequency }),
+      });
+      const data = await res.json();
+      habitDefinitions.push({ id: data.id, name, category, frequency, created_date: todayStr(), active: true });
+      document.getElementById('habitName').value = '';
+      render();
+    } catch (err) {}
+  });
 
   document.addEventListener('keydown', (e) => {
     if (document.getElementById('modalBackdrop').classList.contains('open')) return;
