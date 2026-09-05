@@ -26,6 +26,10 @@
     --intensity-color-soft: rgba(78, 140, 130, 0.18);
     --stand-color: #8A9A5B;
     --stand-color-soft: rgba(138, 154, 91, 0.18);
+    --distance-color: #B08A3E;
+    --distance-color-soft: rgba(176, 138, 62, 0.18);
+    --calories-color: #A15C4A;
+    --calories-color-soft: rgba(161, 92, 74, 0.18);
     --glucose-color: #3A7DB5;
     --glucose-color-soft: rgba(58, 125, 181, 0.18);
     --glucose-low: #C97A2B;
@@ -81,14 +85,14 @@
     gap: 12px;
   }
 
-  .range-picker {
+  .range-picker, .filter-row {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
     gap: 8px;
   }
 
-  .range-picker button {
+  .range-picker button, .chip {
     font-family: 'Inter', sans-serif;
     font-size: 14px;
     font-weight: 500;
@@ -98,15 +102,19 @@
     background: rgba(255,255,255,0.6);
     color: var(--ink);
     cursor: pointer;
-    transition: background 0.15s ease, transform 0.1s ease;
+    transition: background 0.15s ease;
   }
 
-  .range-picker button:hover { background: rgba(255,255,255,0.9); }
+  .range-picker button:hover, .chip:hover { background: rgba(255,255,255,0.9); }
   .range-picker button.active {
     background: var(--ink);
     color: white;
     border-color: var(--ink);
   }
+
+  .chip { font-size: 13px; padding: 6px 14px; }
+  .chip.on { background: var(--ink); color: white; border-color: var(--ink); }
+  .chip.off { opacity: 0.5; }
 
   .range-picker button:disabled {
     opacity: 0.35;
@@ -129,10 +137,7 @@
     padding: 0;
   }
 
-  .nav-group button.today-btn {
-    width: auto;
-    padding: 0 14px;
-  }
+  .nav-group button.today-btn { width: auto; padding: 0 14px; }
 
   .date-range-label {
     font-size: 13px;
@@ -151,6 +156,8 @@
 
   .compare-row input { cursor: pointer; }
   .compare-row label { cursor: pointer; }
+
+  .filter-label { font-size: 13px; color: var(--ink-soft); margin-right: 4px; }
 
   main {
     max-width: 920px;
@@ -182,11 +189,7 @@
     line-height: 1.1;
   }
 
-  .stat .label {
-    color: var(--ink-soft);
-    font-size: 13px;
-    margin-top: 4px;
-  }
+  .stat .label { color: var(--ink-soft); font-size: 13px; margin-top: 4px; }
 
   .panel {
     background: var(--card-bg);
@@ -203,11 +206,7 @@
     margin: 0 0 4px;
   }
 
-  .panel p.hint {
-    color: var(--ink-soft);
-    font-size: 13px;
-    margin: 0 0 18px;
-  }
+  .panel p.hint { color: var(--ink-soft); font-size: 13px; margin: 0 0 18px; }
 
   .panel.night {
     background: var(--night-bg);
@@ -216,22 +215,63 @@
   }
 
   .panel.night p.hint { color: #B7BAD1; }
-
   .panel.hidden { display: none; }
 
   canvas { max-height: 320px; cursor: pointer; }
 
-  .empty-state {
-    text-align: center;
-    padding: 60px 24px;
-    color: var(--ink-soft);
+  .manual-entry {
+    background: var(--card-bg);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 20px 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: flex-end;
   }
 
-  .empty-state code {
-    background: rgba(0,0,0,0.06);
-    padding: 2px 6px;
-    border-radius: 4px;
+  .manual-entry h2 {
+    font-family: 'Newsreader', serif;
+    font-weight: 500;
+    font-size: 20px;
+    margin: 0 0 4px;
+    width: 100%;
   }
+
+  .manual-entry label {
+    display: flex;
+    flex-direction: column;
+    font-size: 12px;
+    color: var(--ink-soft);
+    gap: 4px;
+  }
+
+  .manual-entry input, .manual-entry select {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--line);
+    background: white;
+  }
+
+  .manual-entry button {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    padding: 9px 20px;
+    border-radius: 20px;
+    border: none;
+    background: var(--ink);
+    color: white;
+    cursor: pointer;
+  }
+
+  .manual-entry button:disabled { opacity: 0.5; cursor: default; }
+  .manual-entry .status { font-size: 13px; color: var(--ink-soft); width: 100%; }
+
+  .empty-state { text-align: center; padding: 60px 24px; color: var(--ink-soft); }
+  .empty-state code { background: rgba(0,0,0,0.06); padding: 2px 6px; border-radius: 4px; }
 
   footer {
     max-width: 920px;
@@ -266,12 +306,7 @@
     position: relative;
   }
 
-  .modal h3 {
-    font-family: 'Newsreader', serif;
-    font-weight: 500;
-    font-size: 26px;
-    margin: 0 0 18px;
-  }
+  .modal h3 { font-family: 'Newsreader', serif; font-weight: 500; font-size: 26px; margin: 0 0 18px; }
 
   .modal .close-btn {
     position: absolute;
@@ -294,7 +329,6 @@
   }
 
   .modal .metric-row:last-child { border-bottom: none; }
-
   .modal .metric-label { color: var(--ink-soft); font-size: 14px; }
   .modal .metric-value { font-weight: 600; font-size: 15px; }
 
@@ -340,35 +374,48 @@
     <input type="checkbox" id="compareToggle">
     <label for="compareToggle">Compare to previous period</label>
   </div>
+  <div class="filter-row" id="filterRow">
+    <span class="filter-label">Show:</span>
+  </div>
 </div>
 
 <main id="main">
   <div class="stats-row" id="statsRow"></div>
 
-  <div class="panel">
+  <div class="panel" id="stepsPanel">
     <h2>Steps</h2>
     <p class="hint">Daily step count &middot; click a bar for detail</p>
     <canvas id="stepsChart"></canvas>
   </div>
-  <div class="panel night">
+  <div class="panel night" id="sleepPanel">
     <h2>Sleep</h2>
     <p class="hint">Total hours slept &middot; click a bar for detail</p>
     <canvas id="sleepChart"></canvas>
   </div>
-  <div class="panel">
+  <div class="panel" id="heartRatePanel">
     <h2>Heart rate</h2>
     <p class="hint">Average heart rate &middot; click a point for detail</p>
     <canvas id="heartRateChart"></canvas>
   </div>
-  <div class="panel">
+  <div class="panel" id="intensityPanel">
     <h2>Intensity</h2>
     <p class="hint">Minutes of elevated activity per day</p>
     <canvas id="intensityChart"></canvas>
   </div>
-  <div class="panel">
+  <div class="panel" id="standingPanel">
     <h2>Standing</h2>
     <p class="hint">Hours with at least one stand per day</p>
     <canvas id="standingChart"></canvas>
+  </div>
+  <div class="panel" id="distancePanel">
+    <h2>Distance</h2>
+    <p class="hint">Kilometres covered per day</p>
+    <canvas id="distanceChart"></canvas>
+  </div>
+  <div class="panel" id="caloriesPanel">
+    <h2>Calories</h2>
+    <p class="hint">Calories burned per day</p>
+    <canvas id="caloriesChart"></canvas>
   </div>
   <div class="panel" id="glucoseTrendPanel">
     <h2>Glucose trend</h2>
@@ -377,8 +424,39 @@
   </div>
   <div class="panel" id="glucoseIntradayPanel" style="display:none;">
     <h2>Glucose (day view)</h2>
-    <p class="hint">The full 24-hour reading curve for the single day you're viewing &middot; shaded thresholds mark the 3.9&ndash;10.0 mmol/L target range &middot; only shown in Day mode</p>
+    <p class="hint">The full 24-hour reading curve for the single day you're viewing &middot; dashed lines mark the 3.9&ndash;10.0 mmol/L target range &middot; only shown in Day mode</p>
     <canvas id="glucoseIntradayChart"></canvas>
+  </div>
+
+  <div class="manual-entry">
+    <h2>Add a manual reading</h2>
+    <label>Date
+      <input type="date" id="manualDate">
+    </label>
+    <label>Metric
+      <select id="manualMetric">
+        <optgroup label="Fitness">
+          <option value="fitness:steps">Steps</option>
+          <option value="fitness:distance_m">Distance (km)</option>
+          <option value="fitness:calories">Calories</option>
+          <option value="fitness:sleep_total_min">Sleep total (hours)</option>
+          <option value="fitness:hr_avg">Heart rate avg (bpm)</option>
+          <option value="fitness:intensity">Intensity (minutes)</option>
+          <option value="fitness:standing">Standing (hours)</option>
+        </optgroup>
+        <optgroup label="Glucose">
+          <option value="glucose:avg_mmol">Avg. glucose (mmol/L)</option>
+          <option value="glucose:min_mmol">Min. glucose (mmol/L)</option>
+          <option value="glucose:max_mmol">Max. glucose (mmol/L)</option>
+          <option value="glucose:pct_in_range">Time in range (%)</option>
+        </optgroup>
+      </select>
+    </label>
+    <label>Value
+      <input type="number" step="any" id="manualValue">
+    </label>
+    <button id="manualSubmit">Add reading</button>
+    <div class="status" id="manualStatus"></div>
   </div>
 </main>
 
@@ -399,16 +477,29 @@ let dataByDate = new Map();
 let glucoseDaily = [];
 let glucoseByDate = new Map();
 
-let stepsChart, sleepChart, heartRateChart, intensityChart, standingChart, glucoseTrendChart, glucoseIntradayChart;
+let stepsChart, sleepChart, heartRateChart, intensityChart, standingChart, distanceChart, caloriesChart, glucoseTrendChart, glucoseIntradayChart;
 
 let rangeMode = 'preset';      // 'preset' | 'day' | 'month'
 let currentRangeDays = 30;     // used when rangeMode === 'preset'
-let windowEndIndex = null;     // used when rangeMode === 'preset'
+let windowEndDate = null;      // calendar date string; anchor for preset windowing
 let selectedDate = null;       // used when rangeMode === 'day'
 let selectedMonth = null;      // {year, month(1-12)} used when rangeMode === 'month'
 let compareEnabled = false;
 
-let clickTargets = []; // fitness day objects (or null) aligned to current chart labels
+let clickTargets = [];
+
+const PANEL_CONFIG = [
+  { id: 'steps', panelEl: 'stepsPanel', label: 'Steps' },
+  { id: 'sleep', panelEl: 'sleepPanel', label: 'Sleep' },
+  { id: 'heart_rate', panelEl: 'heartRatePanel', label: 'Heart rate' },
+  { id: 'intensity', panelEl: 'intensityPanel', label: 'Intensity' },
+  { id: 'standing', panelEl: 'standingPanel', label: 'Standing' },
+  { id: 'distance', panelEl: 'distancePanel', label: 'Distance' },
+  { id: 'calories', panelEl: 'caloriesPanel', label: 'Calories' },
+  { id: 'glucose_trend', panelEl: 'glucoseTrendPanel', label: 'Glucose trend' },
+  { id: 'glucose_intraday', panelEl: 'glucoseIntradayPanel', label: 'Glucose day view' },
+];
+let visiblePanels = new Set(PANEL_CONFIG.map(p => p.id));
 
 // ---------- small helpers ----------
 function fmtDate(iso) {
@@ -447,25 +538,23 @@ function addDays(dateStr, n) {
 
 function todayStr() {
   const d = new Date();
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const dd = String(d.getDate()).padStart(2, '0');
-  return `${yyyy}-${mm}-${dd}`; // local date, not UTC -- avoids an off-by-one near midnight
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 function daysInMonth(year, month) {
-  return new Date(year, month, 0).getDate(); // month is 1-12
+  return new Date(year, month, 0).getDate();
 }
 
 function monthLabel(year, month) {
   return new Date(year, month - 1, 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
 }
 
-// Fitness-data metrics (from the Mi Fitness pipeline, looked up by date)
 function getMetricValue(day, key) {
   if (!day) return null;
   switch (key) {
     case 'steps': return day.steps || 0;
+    case 'distance': return day.distance_m ? day.distance_m / 1000 : null;
+    case 'calories': return day.calories || null;
     case 'sleep_total': return day.sleep_total_min ? day.sleep_total_min / 60 : null;
     case 'hr_avg': return day.raw?.heart_rate?.avg_hr ?? null;
     case 'intensity': return day.raw?.intensity?.duration ?? null;
@@ -474,9 +563,6 @@ function getMetricValue(day, key) {
   }
 }
 
-// Unified lookup across BOTH data sources (fitness + glucose), keyed by date
-// string. This is the one place that knows which store a metric lives in --
-// everything else just deals in metric keys and dates.
 function getValueForDate(dateStr, key) {
   if (!dateStr) return null;
   if (key === 'glucose_avg') return glucoseByDate.get(dateStr)?.avg_mmol ?? null;
@@ -484,14 +570,14 @@ function getValueForDate(dateStr, key) {
   return getMetricValue(dataByDate.get(dateStr) || null, key);
 }
 
-const METRIC_KEYS = ['steps', 'sleep_total', 'hr_avg', 'intensity', 'standing', 'glucose_avg', 'glucose_range_pct'];
+const METRIC_KEYS = ['steps', 'distance', 'calories', 'sleep_total', 'hr_avg', 'intensity', 'standing', 'glucose_avg', 'glucose_range_pct'];
 
-// ---------- value label plugin (draws the number above each bar/point) ----------
+// ---------- value label plugin ----------
 const valueLabelsPlugin = {
   id: 'valueLabels',
   afterDatasetsDraw(chart, args, opts) {
     if (!opts || !opts.enabled) return;
-    if (chart.data.labels.length > 31) return; // avoid unreadable clutter on long ranges
+    if (chart.data.labels.length > 31) return;
     const { ctx } = chart;
     ctx.save();
     ctx.font = '600 11px Inter, sans-serif';
@@ -517,7 +603,15 @@ const valueLabelsPlugin = {
 };
 Chart.register(valueLabelsPlugin);
 
-// ---------- date lists for whichever mode is active ----------
+// ---------- calendar-exact date lists for whichever mode is active ----------
+function getPresetDateList() {
+  if (currentRangeDays === 0) return allData.map(d => d.date);
+  if (windowEndDate === null) windowEndDate = todayStr();
+  const dates = [];
+  for (let i = currentRangeDays - 1; i >= 0; i--) dates.push(addDays(windowEndDate, -i));
+  return dates;
+}
+
 function dateListForMode() {
   if (rangeMode === 'day') {
     if (!compareEnabled) {
@@ -550,29 +644,17 @@ function dateListForMode() {
     return { labels, dateList, prevDateList };
   }
 
-  // preset
-  const filtered = getPresetWindow();
-  const labels = filtered.map(d => fmtDate(d.date));
-  const dateList = filtered.map(d => d.date);
+  // preset -- calendar-date arithmetic throughout, so gaps in the underlying
+  // data never desynchronize "this period" from "previous period"
+  const dateList = getPresetDateList();
+  const labels = dateList.map(d => fmtDate(d));
   let prevDateList = null;
   if (compareEnabled && currentRangeDays > 0) {
-    const end = windowEndIndex === null ? allData.length : windowEndIndex;
-    const start = Math.max(0, end - currentRangeDays);
-    const prevEnd = start;
-    const prevStart = Math.max(0, prevEnd - currentRangeDays);
-    const prevSlice = allData.slice(prevStart, prevEnd);
-    const padCount = Math.max(0, dateList.length - prevSlice.length);
-    prevDateList = [...Array(padCount).fill(null), ...prevSlice.map(d => d.date)];
+    const prevEnd = addDays(windowEndDate, -currentRangeDays);
+    prevDateList = [];
+    for (let i = currentRangeDays - 1; i >= 0; i--) prevDateList.push(addDays(prevEnd, -i));
   }
   return { labels, dateList, prevDateList };
-}
-
-function getPresetWindow() {
-  if (currentRangeDays === 0) return allData;
-  if (windowEndIndex === null) windowEndIndex = allData.length;
-  windowEndIndex = Math.max(0, Math.min(windowEndIndex, allData.length));
-  const start = Math.max(0, windowEndIndex - currentRangeDays);
-  return allData.slice(start, windowEndIndex);
 }
 
 function buildSeries() {
@@ -592,7 +674,7 @@ function buildSeries() {
   return { labels, current, previous, targets, dateList };
 }
 
-// ---------- day detail modal (fitness data only) ----------
+// ---------- day detail modal ----------
 function showDayDetail(day) {
   if (!day) return;
   const raw = day.raw || {};
@@ -618,6 +700,7 @@ function showDayDetail(day) {
     html += row('Deep sleep', minutesToHrsMin(day.sleep_deep_min));
     html += row('Light sleep', minutesToHrsMin(day.sleep_light_min));
     if (raw.sleep) {
+      html += row('REM sleep', raw.sleep.sleep_rem_duration ? minutesToHrsMin(raw.sleep.sleep_rem_duration) : null);
       html += row('Sleep score', raw.sleep.sleep_score);
       html += row('Avg. heart rate (sleep)', raw.sleep.avg_hr ? `${raw.sleep.avg_hr} bpm` : null);
     }
@@ -637,9 +720,9 @@ function showDayDetail(day) {
   const g = glucoseByDate.get(day.date);
   if (g) {
     html += '<div class="section-title">Glucose</div>';
-    html += row('Average', `${g.avg_mmol} mmol/L`);
-    html += row('Range', `${g.min_mmol}\u2013${g.max_mmol} mmol/L`);
-    html += row('Time in range', `${g.pct_in_range}%`);
+    html += row('Average', g.avg_mmol !== null ? `${g.avg_mmol} mmol/L` : null);
+    html += row('Range', (g.min_mmol !== null && g.max_mmol !== null) ? `${g.min_mmol}\u2013${g.max_mmol} mmol/L` : null);
+    html += row('Time in range', g.pct_in_range !== null ? `${g.pct_in_range}%` : null);
   }
 
   if (stress || spo2) {
@@ -690,12 +773,11 @@ function updateNavControls() {
       label.textContent = 'Full history';
       return;
     }
-    const end = windowEndIndex === null ? allData.length : windowEndIndex;
-    const start = Math.max(0, end - currentRangeDays);
-    backBtn.disabled = start <= 0;
-    forwardBtn.disabled = end >= allData.length;
-    const win = allData.slice(start, end);
-    label.textContent = win.length ? `${fmtDate(win[0].date)} \u2013 ${fmtDate(win[win.length - 1].date)}` : '';
+    if (windowEndDate === null) windowEndDate = todayStr();
+    const startDate = addDays(windowEndDate, -(currentRangeDays - 1));
+    backBtn.disabled = false;
+    forwardBtn.disabled = windowEndDate >= todayStr();
+    label.textContent = `${fmtDate(startDate)} \u2013 ${fmtDate(windowEndDate)}`;
   }
 }
 
@@ -714,11 +796,10 @@ function shiftWindow(direction) {
     selectedMonth = { year, month };
   } else {
     if (currentRangeDays === 0) return;
-    const current = windowEndIndex === null ? allData.length : windowEndIndex;
-    windowEndIndex = Math.max(
-      Math.min(currentRangeDays, allData.length),
-      Math.min(current + direction * currentRangeDays, allData.length)
-    );
+    if (windowEndDate === null) windowEndDate = todayStr();
+    let next = addDays(windowEndDate, direction * currentRangeDays);
+    if (next > todayStr()) next = todayStr();
+    windowEndDate = next;
   }
   render();
 }
@@ -730,7 +811,7 @@ function jumpToToday() {
     const now = new Date();
     selectedMonth = { year: now.getFullYear(), month: now.getMonth() + 1 };
   } else {
-    windowEndIndex = allData.length;
+    windowEndDate = todayStr();
   }
   render();
 }
@@ -740,22 +821,45 @@ function setActiveButton(el) {
   if (el) el.classList.add('active');
 }
 
+// ---------- metric filter chips ----------
+function renderFilterChips() {
+  const row = document.getElementById('filterRow');
+  row.querySelectorAll('.chip').forEach(c => c.remove());
+  PANEL_CONFIG.forEach(p => {
+    const chip = document.createElement('button');
+    chip.className = 'chip ' + (visiblePanels.has(p.id) ? 'on' : 'off');
+    chip.textContent = p.label;
+    chip.addEventListener('click', () => {
+      if (visiblePanels.has(p.id)) {
+        if (visiblePanels.size === 1) return; // always at least one shown
+        visiblePanels.delete(p.id);
+      } else {
+        visiblePanels.add(p.id);
+      }
+      renderFilterChips();
+      render();
+    });
+    row.appendChild(chip);
+  });
+}
+
 // ---------- glucose intraday chart (Day mode only) ----------
 function minutesSinceMidnight(timestamp) {
   const d = new Date(timestamp);
   return d.getHours() * 60 + d.getMinutes();
 }
 
-function minutesToHHMM(mins) {
+function minutesToClock(mins) {
   const h = Math.floor(mins / 60);
   const m = mins % 60;
-  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:00`;
 }
 
 async function renderGlucoseIntraday() {
   const panel = document.getElementById('glucoseIntradayPanel');
+  const filterAllows = visiblePanels.has('glucose_intraday');
 
-  if (rangeMode !== 'day') {
+  if (rangeMode !== 'day' || !filterAllows) {
     panel.style.display = 'none';
     return;
   }
@@ -778,9 +882,6 @@ async function renderGlucoseIntraday() {
 
   panel.style.display = '';
 
-  // Plot on a full 00:00-23:59 linear minute axis, regardless of when
-  // readings actually happened -- gaps in sensor coverage just show as
-  // gaps in the line, rather than shrinking the axis to fit the data.
   const points = readings
     .map(r => ({ x: minutesSinceMidnight(r.timestamp), y: r.value }))
     .sort((a, b) => a.x - b.x);
@@ -824,9 +925,7 @@ async function renderGlucoseIntraday() {
       responsive: true,
       layout: { padding: { top: 24 } },
       parsing: false,
-      plugins: {
-        legend: { display: false },
-      },
+      plugins: { legend: { display: false } },
       scales: {
         x: {
           type: 'linear',
@@ -835,7 +934,7 @@ async function renderGlucoseIntraday() {
           grid: { display: false },
           ticks: {
             stepSize: 120,
-            callback: (val) => minutesToHHMM(val),
+            callback: (val) => minutesToClock(Math.round(val)),
           },
         },
         y: {
@@ -857,7 +956,6 @@ function render() {
   const avgSleep = average(current.sleep_total || []);
   const bestSteps = Math.max(0, ...(current.steps || []).filter(v => v !== null));
   const avgGlucose = average((current.glucose_avg || []).filter(v => v !== null));
-  const avgTimeInRange = average((current.glucose_range_pct || []).filter(v => v !== null));
   const hasGlucose = (current.glucose_avg || []).some(v => v !== null);
 
   document.getElementById('statsRow').innerHTML = `
@@ -878,21 +976,21 @@ function render() {
       <div class="value">${avgGlucose.toFixed(1)}</div>
       <div class="label">Avg. glucose (mmol/L)</div>
     </div>
-    <div class="stat">
-      <div class="value">${Math.round(avgTimeInRange)}%</div>
-      <div class="label">Time in range</div>
-    </div>
     ` : ''}
-    <div class="stat">
-      <div class="value">${labels.length}</div>
-      <div class="label">${rangeMode === 'day' ? (compareEnabled ? 'Days shown' : 'Day shown') : 'Days shown'}</div>
-    </div>
   `;
 
-  document.getElementById('glucoseTrendPanel').classList.toggle('hidden', !hasGlucose);
+  PANEL_CONFIG.forEach(p => {
+    if (p.id === 'glucose_intraday') return; // handled in renderGlucoseIntraday
+    const hideForGlucoseTrend = p.id === 'glucose_trend' && !hasGlucose;
+    document.getElementById(p.panelEl).classList.toggle('hidden', !visiblePanels.has(p.id) || hideForGlucoseTrend);
+  });
 
-  [stepsChart, sleepChart, heartRateChart, intensityChart, standingChart, glucoseTrendChart]
+  [stepsChart, sleepChart, heartRateChart, intensityChart, standingChart, distanceChart, caloriesChart, glucoseTrendChart]
     .forEach(c => c && c.destroy());
+
+  function prevLabelColor(nightPanel) {
+    return nightPanel ? '#B7BAD1' : '#5C6270';
+  }
 
   function buildBarDatasets(metricKey, colorVar, softVar, label) {
     const datasets = [{
@@ -914,7 +1012,7 @@ function render() {
         borderWidth: 1.5,
         borderRadius: 4,
         maxBarThickness: 28,
-        hideValueLabel: true
+        valueLabelColor: prevLabelColor(false)
       });
     }
     return datasets;
@@ -940,72 +1038,70 @@ function render() {
     }
   });
 
-  // Sleep -- full deep/light/REM breakdown when not comparing (gives real
-  // hover detail per stage); falls back to a single total-hours bar when
-  // comparison mode is on, since stacking + a previous-period overlay
-  // together was too much to read at once.
+  // Sleep -- full deep/light/REM breakdown when available and not comparing;
+  // falls back to a plain solid bar for any day with a total but no
+  // segment-level detail (e.g. manually imported/entered days).
   const sleepCtx = document.getElementById('sleepChart').getContext('2d');
   let sleepDatasets;
 
   if (!previous) {
-    const deepHrs = dateList.map(d => { const day = d ? dataByDate.get(d) : null; return day ? (day.sleep_deep_min || 0) / 60 : null; });
-    const lightHrs = dateList.map(d => { const day = d ? dataByDate.get(d) : null; return day ? (day.sleep_light_min || 0) / 60 : null; });
-    const remHrs = dateList.map(d => { const day = d ? dataByDate.get(d) : null; return day ? (day.raw?.sleep?.sleep_rem_duration || 0) / 60 : null; });
-    const totalHrs = current.sleep_total;
+    const deepHrs = [], lightHrs = [], remHrs = [], noDetailTotal = [];
+    dateList.forEach(d => {
+      const day = d ? dataByDate.get(d) : null;
+      const deep = day ? (day.sleep_deep_min || 0) / 60 : 0;
+      const light = day ? (day.sleep_light_min || 0) / 60 : 0;
+      const rem = day ? (day.raw?.sleep?.sleep_rem_duration || 0) / 60 : 0;
+      const total = day && day.sleep_total_min ? day.sleep_total_min / 60 : null;
+      const hasBreakdown = deep > 0 || light > 0 || rem > 0;
+
+      if (hasBreakdown) {
+        deepHrs.push(deep); lightHrs.push(light); remHrs.push(rem); noDetailTotal.push(null);
+      } else {
+        deepHrs.push(null); lightHrs.push(null); remHrs.push(null); noDetailTotal.push(total);
+      }
+    });
 
     sleepDatasets = [
       {
-        label: 'Deep sleep',
-        data: deepHrs,
+        label: 'Deep sleep', data: deepHrs,
         backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--sleep-deep'),
-        stack: 'sleep',
-        borderRadius: 4,
-        maxBarThickness: 28,
-        hideValueLabel: true
+        stack: 'sleep', borderRadius: 4, maxBarThickness: 28, hideValueLabel: true
       },
       {
-        label: 'Light sleep',
-        data: lightHrs,
+        label: 'Light sleep', data: lightHrs,
         backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--sleep-light'),
-        stack: 'sleep',
-        borderRadius: 4,
-        maxBarThickness: 28,
-        hideValueLabel: true
+        stack: 'sleep', borderRadius: 4, maxBarThickness: 28, hideValueLabel: true
       },
       {
-        // Drawn last so it sits on top of the stack -- its element position
-        // is the top of the whole bar, which is where we want the *total*
-        // sleep number to appear (not this segment's own REM value).
-        label: 'REM sleep',
-        data: remHrs,
+        // Drawn last, so its element position is the top of the whole
+        // stack -- that's where we want the combined total to appear.
+        label: 'REM sleep', data: remHrs,
         backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--sleep-rem'),
-        stack: 'sleep',
-        borderRadius: 4,
-        maxBarThickness: 28,
+        stack: 'sleep', borderRadius: 4, maxBarThickness: 28,
         valueLabelColor: '#EDEBF6',
-        valueLabelOverrideData: totalHrs
+        valueLabelOverrideData: current.sleep_total
+      },
+      {
+        label: 'Total sleep (no stage detail)', data: noDetailTotal,
+        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--sleep-light'),
+        stack: 'sleep', borderRadius: 4, maxBarThickness: 28,
+        valueLabelColor: '#EDEBF6'
       }
     ];
   } else {
     sleepDatasets = [
       {
-        label: 'Total sleep (previous)',
-        data: previous.sleep_total,
+        label: 'Total sleep (previous)', data: previous.sleep_total,
         backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--prev-fill-night'),
         borderColor: getComputedStyle(document.documentElement).getPropertyValue('--prev-border-night'),
-        borderWidth: 1.5,
-        borderRadius: 4,
-        maxBarThickness: 28,
-        hideValueLabel: true
+        borderWidth: 1.5, borderRadius: 4, maxBarThickness: 28,
+        valueLabelColor: prevLabelColor(true)
       },
       {
-        label: 'Total sleep',
-        data: current.sleep_total,
+        label: 'Total sleep', data: current.sleep_total,
         backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--sleep-light'),
         borderColor: getComputedStyle(document.documentElement).getPropertyValue('--sleep-color'),
-        borderWidth: 1.5,
-        borderRadius: 4,
-        maxBarThickness: 28,
+        borderWidth: 1.5, borderRadius: 4, maxBarThickness: 28,
         valueLabelColor: '#EDEBF6'
       }
     ];
@@ -1020,18 +1116,13 @@ function render() {
       onClick: (evt, elements) => onChartClick(elements),
       interaction: { mode: 'index', intersect: false },
       plugins: {
-        legend: {
-          display: true,
-          position: 'top', align: 'end',
-          labels: { color: '#EDEBF6', boxWidth: 12, font: { size: 12 } }
-        },
+        legend: { display: true, position: 'top', align: 'end', labels: { color: '#EDEBF6', boxWidth: 12, font: { size: 12 } } },
         valueLabels: { enabled: true, formatter: v => v.toFixed(1) + 'h' }
       },
       scales: {
         x: { grid: { display: false }, ticks: { color: '#B7BAD1' } },
         y: {
-          beginAtZero: true,
-          stacked: true,
+          beginAtZero: true, stacked: true,
           title: { display: true, text: 'Hours', color: '#B7BAD1' },
           grid: { color: 'rgba(255,255,255,0.08)' },
           ticks: { color: '#B7BAD1' }
@@ -1040,26 +1131,21 @@ function render() {
     }
   });
 
-  // Heart rate -- average only, kept simple for comparison mode
+  // Heart rate
   const hrDatasets = [{
-    label: 'Average',
-    data: current.hr_avg,
+    label: 'Average', data: current.hr_avg,
     borderColor: getComputedStyle(document.documentElement).getPropertyValue('--hr-color'),
     backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--hr-color'),
     valueLabelColor: getComputedStyle(document.documentElement).getPropertyValue('--hr-color'),
-    tension: 0.3,
-    pointRadius: 3
+    tension: 0.3, pointRadius: 3
   }];
   if (previous) {
     hrDatasets.unshift({
-      label: 'Average (previous)',
-      data: previous.hr_avg,
+      label: 'Average (previous)', data: previous.hr_avg,
       borderColor: getComputedStyle(document.documentElement).getPropertyValue('--prev-border'),
       backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--prev-border'),
-      borderDash: [4, 4],
-      tension: 0.3,
-      pointRadius: 3,
-      hideValueLabel: true
+      borderDash: [4, 4], tension: 0.3, pointRadius: 3,
+      valueLabelColor: prevLabelColor(false)
     });
   }
   const heartRateCtx = document.getElementById('heartRateChart').getContext('2d');
@@ -1121,36 +1207,71 @@ function render() {
     }
   });
 
-  // Glucose trend (only meaningful once glucose data has been imported)
+  // Distance
+  const distanceCtx = document.getElementById('distanceChart').getContext('2d');
+  distanceChart = new Chart(distanceCtx, {
+    type: 'bar',
+    data: { labels, datasets: buildBarDatasets('distance', '--distance-color', '--distance-color-soft', 'km') },
+    options: {
+      responsive: true,
+      layout: { padding: { top: 24 } },
+      onClick: (evt, elements) => onChartClick(elements),
+      plugins: {
+        legend: { display: !!previous, position: 'top', align: 'end', labels: { boxWidth: 12, font: { size: 12 } } },
+        valueLabels: { enabled: true, formatter: v => v.toFixed(1) }
+      },
+      scales: {
+        x: { grid: { display: false } },
+        y: { beginAtZero: true, title: { display: true, text: 'km' }, grid: { color: 'rgba(0,0,0,0.06)' } }
+      }
+    }
+  });
+
+  // Calories
+  const caloriesCtx = document.getElementById('caloriesChart').getContext('2d');
+  caloriesChart = new Chart(caloriesCtx, {
+    type: 'bar',
+    data: { labels, datasets: buildBarDatasets('calories', '--calories-color', '--calories-color-soft', 'Calories') },
+    options: {
+      responsive: true,
+      layout: { padding: { top: 24 } },
+      onClick: (evt, elements) => onChartClick(elements),
+      plugins: {
+        legend: { display: !!previous, position: 'top', align: 'end', labels: { boxWidth: 12, font: { size: 12 } } },
+        valueLabels: { enabled: true, formatter: v => Math.round(v) }
+      },
+      scales: {
+        x: { grid: { display: false } },
+        y: { beginAtZero: true, title: { display: true, text: 'Calories' }, grid: { color: 'rgba(0,0,0,0.06)' } }
+      }
+    }
+  });
+
+  // Glucose trend
   if (hasGlucose) {
-    const glucoseCtx = document.getElementById('glucoseTrendChart').getContext('2d');
     const glucoseDatasets = [{
-      label: 'Avg. glucose',
-      data: current.glucose_avg,
+      label: 'Avg. glucose', data: current.glucose_avg,
       borderColor: getComputedStyle(document.documentElement).getPropertyValue('--glucose-color'),
       backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--glucose-color'),
       valueLabelColor: getComputedStyle(document.documentElement).getPropertyValue('--glucose-color'),
-      tension: 0.3,
-      pointRadius: 3
+      tension: 0.3, pointRadius: 3
     }];
     if (previous) {
       glucoseDatasets.unshift({
-        label: 'Avg. glucose (previous)',
-        data: previous.glucose_avg,
+        label: 'Avg. glucose (previous)', data: previous.glucose_avg,
         borderColor: getComputedStyle(document.documentElement).getPropertyValue('--prev-border'),
         backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--prev-border'),
-        borderDash: [4, 4],
-        tension: 0.3,
-        pointRadius: 3,
-        hideValueLabel: true
+        borderDash: [4, 4], tension: 0.3, pointRadius: 3,
+        valueLabelColor: prevLabelColor(false)
       });
     }
+    const glucoseCtx = document.getElementById('glucoseTrendChart').getContext('2d');
     glucoseTrendChart = new Chart(glucoseCtx, {
       type: 'line',
       data: { labels, datasets: glucoseDatasets },
       options: {
         responsive: true,
-      layout: { padding: { top: 24 } },
+        layout: { padding: { top: 24 } },
         plugins: {
           legend: { display: !!previous, position: 'top', align: 'end', labels: { boxWidth: 12, font: { size: 12 } } },
           valueLabels: { enabled: true, formatter: v => v.toFixed(1) }
@@ -1166,13 +1287,75 @@ function render() {
   renderGlucoseIntraday();
 }
 
-// ---------- init ----------
-async function init() {
+// ---------- manual entry ----------
+async function submitManualEntry() {
+  const dateVal = document.getElementById('manualDate').value;
+  const metricVal = document.getElementById('manualMetric').value;
+  const rawValue = document.getElementById('manualValue').value;
+  const status = document.getElementById('manualStatus');
+  const btn = document.getElementById('manualSubmit');
+
+  if (!dateVal || rawValue === '') {
+    status.textContent = 'Enter a date and a value.';
+    return;
+  }
+
+  const [source, metric] = metricVal.split(':');
+  let value = Number(rawValue);
+
+  // Convert user-facing units to storage units
+  if (metric === 'distance_m') value = value * 1000;
+  if (metric === 'sleep_total_min') value = value * 60;
+
+  btn.disabled = true;
+  status.textContent = 'Saving...';
+
+  try {
+    const res = await fetch('/api/manual-entry', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ source, date: dateVal, metric, value }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      status.textContent = 'Saved.';
+      await loadAllData();
+      render();
+    } else {
+      status.textContent = data.error || 'Failed to save.';
+    }
+  } catch (e) {
+    status.textContent = 'Failed to save: ' + e.message;
+  }
+
+  btn.disabled = false;
+}
+
+// ---------- data loading ----------
+async function loadAllData() {
   try {
     const res = await fetch('/api/data', { cache: 'no-store' });
-    if (!res.ok) throw new Error('no data yet');
-    allData = await res.json();
-  } catch (e) {
+    if (res.ok) {
+      allData = await res.json();
+      dataByDate = new Map(allData.map(d => [d.date, d]));
+    }
+  } catch (e) {}
+
+  try {
+    const gRes = await fetch('/api/glucose', { cache: 'no-store' });
+    if (gRes.ok) {
+      const gData = await gRes.json();
+      glucoseDaily = gData.daily || [];
+      glucoseByDate = new Map(glucoseDaily.map(d => [d.date, d]));
+    }
+  } catch (e) {}
+}
+
+// ---------- init ----------
+async function init() {
+  await loadAllData();
+
+  if (!allData.length) {
     document.getElementById('main').innerHTML = `
       <div class="empty-state">
         <p>No data yet. Once the daily pull has run at least once, this page will fill in automatically.</p>
@@ -1182,24 +1365,7 @@ async function init() {
     return;
   }
 
-  if (!allData.length) {
-    document.getElementById('main').innerHTML = `<div class="empty-state"><p>No data yet.</p></div>`;
-    return;
-  }
-
-  dataByDate = new Map(allData.map(d => [d.date, d]));
-
-  try {
-    const gRes = await fetch('/api/glucose', { cache: 'no-store' });
-    if (gRes.ok) {
-      const gData = await gRes.json();
-      glucoseDaily = gData.daily || [];
-      glucoseByDate = new Map(glucoseDaily.map(d => [d.date, d]));
-    }
-  } catch (e) {
-    // glucose is entirely optional -- dashboard works fine without it
-  }
-
+  renderFilterChips();
   render();
 
   document.querySelectorAll('#rangePicker button[data-mode]').forEach(btn => {
@@ -1210,7 +1376,7 @@ async function init() {
       if (mode === 'preset') {
         rangeMode = 'preset';
         currentRangeDays = parseInt(btn.dataset.days, 10);
-        windowEndIndex = allData.length;
+        windowEndDate = todayStr();
       } else if (mode === 'day') {
         rangeMode = 'day';
         selectedDate = allData.length ? allData[allData.length - 1].date : todayStr();
@@ -1237,8 +1403,12 @@ async function init() {
     render();
   });
 
+  document.getElementById('manualSubmit').addEventListener('click', submitManualEntry);
+  document.getElementById('manualDate').value = todayStr();
+
   document.addEventListener('keydown', (e) => {
     if (document.getElementById('modalBackdrop').classList.contains('open')) return;
+    if (['INPUT', 'SELECT'].includes(document.activeElement.tagName)) return;
     if (e.key === 'ArrowLeft') shiftWindow(-1);
     else if (e.key === 'ArrowRight') shiftWindow(1);
   });
