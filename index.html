@@ -62,6 +62,8 @@
 
   .range-picker {
     display: flex;
+    align-items: center;
+    flex-wrap: wrap;
     gap: 8px;
     margin: 28px auto 0;
     max-width: 920px;
@@ -86,6 +88,34 @@
     background: var(--ink);
     color: white;
     border-color: var(--ink);
+  }
+
+  .range-picker button:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  .nav-group {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+  }
+
+  .nav-group button {
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .date-range-label {
+    font-size: 13px;
+    color: var(--ink-soft);
+    min-width: 130px;
+    text-align: center;
   }
 
   main {
@@ -258,6 +288,11 @@
   <button data-days="30" class="active">30 days</button>
   <button data-days="90">90 days</button>
   <button data-days="0">All time</button>
+  <div class="nav-group">
+    <button id="navBack" title="Earlier (Left arrow)">&larr;</button>
+    <span class="date-range-label" id="dateRangeLabel"></span>
+    <button id="navForward" title="Later (Right arrow)">&rarr;</button>
+  </div>
 </div>
 
 <main id="main">
@@ -302,6 +337,8 @@
 <script>
 let allData = [];
 let stepsChart, sleepChart, heartRateChart, intensityChart, standingChart;
+let currentRangeDays = 30;
+let windowEndIndex = null; // exclusive end index into allData; null = latest
 
 function fmtDate(iso) {
   const d = new Date(iso + 'T00:00:00');
@@ -394,9 +431,55 @@ document.getElementById('modalBackdrop').addEventListener('click', (e) => {
 
 let currentFiltered = [];
 
+function getWindowedData() {
+  if (currentRangeDays === 0) return allData;
+  if (windowEndIndex === null) windowEndIndex = allData.length;
+  windowEndIndex = Math.max(0, Math.min(windowEndIndex, allData.length));
+  const start = Math.max(0, windowEndIndex - currentRangeDays);
+  return allData.slice(start, windowEndIndex);
+}
+
+function updateNavControls(filtered) {
+  const backBtn = document.getElementById('navBack');
+  const forwardBtn = document.getElementById('navForward');
+  const label = document.getElementById('dateRangeLabel');
+
+  if (currentRangeDays === 0 || !filtered.length) {
+    backBtn.disabled = true;
+    forwardBtn.disabled = true;
+    label.textContent = currentRangeDays === 0 ? 'Full history' : '';
+    return;
+  }
+
+  const end = windowEndIndex === null ? allData.length : windowEndIndex;
+  const start = Math.max(0, end - currentRangeDays);
+
+  backBtn.disabled = start <= 0;
+  forwardBtn.disabled = end >= allData.length;
+  label.textContent = `${fmtDate(filtered[0].date)} \u2013 ${fmtDate(filtered[filtered.length - 1].date)}`;
+}
+
+function shiftWindow(direction) {
+  if (currentRangeDays === 0) return;
+  const current = windowEndIndex === null ? allData.length : windowEndIndex;
+  windowEndIndex = Math.max(
+    Math.min(currentRangeDays, allData.length),
+    Math.min(current + direction * currentRangeDays, allData.length)
+  );
+  render(currentRangeDays);
+}
+
+function selectRange(days) {
+  currentRangeDays = days;
+  windowEndIndex = allData.length; // reset to the most recent window
+  render(days);
+}
+
 function render(days) {
-  const filtered = days === 0 ? allData : allData.slice(-days);
+  currentRangeDays = days;
+  const filtered = getWindowedData();
   currentFiltered = filtered;
+  updateNavControls(filtered);
   const labels = filtered.map(d => fmtDate(d.date));
 
   const steps = filtered.map(d => d.steps || 0);
@@ -633,12 +716,21 @@ async function init() {
 
   render(30);
 
-  document.querySelectorAll('#rangePicker button').forEach(btn => {
+  document.querySelectorAll('#rangePicker button[data-days]').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('#rangePicker button').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#rangePicker button[data-days]').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      render(parseInt(btn.dataset.days, 10));
+      selectRange(parseInt(btn.dataset.days, 10));
     });
+  });
+
+  document.getElementById('navBack').addEventListener('click', () => shiftWindow(-1));
+  document.getElementById('navForward').addEventListener('click', () => shiftWindow(1));
+
+  document.addEventListener('keydown', (e) => {
+    if (document.getElementById('modalBackdrop').classList.contains('open')) return;
+    if (e.key === 'ArrowLeft') shiftWindow(-1);
+    else if (e.key === 'ArrowRight') shiftWindow(1);
   });
 }
 
