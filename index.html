@@ -25,6 +25,10 @@
     --intensity-color-soft: rgba(78, 140, 130, 0.18);
     --stand-color: #8A9A5B;
     --stand-color-soft: rgba(138, 154, 91, 0.18);
+    --prev-fill: rgba(34, 38, 47, 0.10);
+    --prev-border: rgba(34, 38, 47, 0.32);
+    --prev-fill-night: rgba(255, 255, 255, 0.08);
+    --prev-border-night: rgba(255, 255, 255, 0.35);
     --line: rgba(34, 38, 47, 0.12);
     --card-bg: rgba(255, 255, 255, 0.55);
   }
@@ -60,14 +64,20 @@
     max-width: 60ch;
   }
 
+  .controls {
+    max-width: 920px;
+    margin: 28px auto 0;
+    padding: 0 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
   .range-picker {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
     gap: 8px;
-    margin: 28px auto 0;
-    max-width: 920px;
-    padding: 0 24px;
   }
 
   .range-picker button {
@@ -111,12 +121,28 @@
     padding: 0;
   }
 
+  .nav-group button.today-btn {
+    width: auto;
+    padding: 0 14px;
+  }
+
   .date-range-label {
     font-size: 13px;
     color: var(--ink-soft);
-    min-width: 130px;
+    min-width: 140px;
     text-align: center;
   }
+
+  .compare-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--ink-soft);
+  }
+
+  .compare-row input { cursor: pointer; }
+  .compare-row label { cursor: pointer; }
 
   main {
     max-width: 920px;
@@ -183,7 +209,7 @@
 
   .panel.night p.hint { color: #B7BAD1; }
 
-  canvas { max-height: 320px; }
+  canvas { max-height: 320px; cursor: pointer; }
 
   .empty-state {
     text-align: center;
@@ -204,8 +230,6 @@
     color: #B7BAD1;
     font-size: 13px;
   }
-
-  canvas { cursor: pointer; }
 
   .modal-backdrop {
     position: fixed;
@@ -283,15 +307,25 @@
   <p class="subtitle" style="margin-top: 6px;"><a href="/upload.html" style="color: inherit;">Import data manually &rarr;</a></p>
 </header>
 
-<div class="range-picker" id="rangePicker">
-  <button data-days="7">7 days</button>
-  <button data-days="30" class="active">30 days</button>
-  <button data-days="90">90 days</button>
-  <button data-days="0">All time</button>
-  <div class="nav-group">
-    <button id="navBack" title="Earlier (Left arrow)">&larr;</button>
-    <span class="date-range-label" id="dateRangeLabel"></span>
-    <button id="navForward" title="Later (Right arrow)">&rarr;</button>
+<div class="controls">
+  <div class="range-picker" id="rangePicker">
+    <button data-mode="day">Day</button>
+    <button data-mode="preset" data-days="7">7 days</button>
+    <button data-mode="preset" data-days="30" class="active">30 days</button>
+    <button data-mode="preset" data-days="90">90 days</button>
+    <button data-mode="preset" data-days="0">All time</button>
+    <button data-mode="month" data-which="this">This Month</button>
+    <button data-mode="month" data-which="last">Last Month</button>
+    <div class="nav-group">
+      <button id="navBack" title="Earlier (Left arrow)">&larr;</button>
+      <span class="date-range-label" id="dateRangeLabel"></span>
+      <button id="navToday" class="today-btn" title="Jump to today">Today</button>
+      <button id="navForward" title="Later (Right arrow)">&rarr;</button>
+    </div>
+  </div>
+  <div class="compare-row">
+    <input type="checkbox" id="compareToggle">
+    <label for="compareToggle">Compare to previous period</label>
   </div>
 </div>
 
@@ -304,12 +338,12 @@
   </div>
   <div class="panel night">
     <h2>Sleep</h2>
-    <p class="hint">Deep and light sleep, hours per night &middot; click a bar for detail</p>
+    <p class="hint">Total hours slept &middot; click a bar for detail</p>
     <canvas id="sleepChart"></canvas>
   </div>
   <div class="panel">
     <h2>Heart rate</h2>
-    <p class="hint">Average and resting heart rate &middot; click a point for detail</p>
+    <p class="hint">Average heart rate &middot; click a point for detail</p>
     <canvas id="heartRateChart"></canvas>
   </div>
   <div class="panel">
@@ -335,14 +369,29 @@
 </div>
 
 <script>
+// ---------- state ----------
 let allData = [];
+let dataByDate = new Map();
 let stepsChart, sleepChart, heartRateChart, intensityChart, standingChart;
-let currentRangeDays = 30;
-let windowEndIndex = null; // exclusive end index into allData; null = latest
 
+let rangeMode = 'preset';      // 'preset' | 'day' | 'month'
+let currentRangeDays = 30;     // used when rangeMode === 'preset'
+let windowEndIndex = null;     // used when rangeMode === 'preset'
+let selectedDate = null;       // used when rangeMode === 'day'
+let selectedMonth = null;      // {year, month(1-12)} used when rangeMode === 'month'
+let compareEnabled = false;
+
+let clickTargets = []; // day objects (or null) aligned to current chart labels, for click-to-detail
+
+// ---------- small helpers ----------
 function fmtDate(iso) {
   const d = new Date(iso + 'T00:00:00');
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
+function fmtFullDate(iso) {
+  const d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
 }
 
 function average(arr) {
@@ -358,17 +407,174 @@ function minutesToHrsMin(min) {
   return h ? `${h}h ${m}m` : `${m}m`;
 }
 
-function fmtTime(unixSeconds) {
-  if (!unixSeconds) return null;
-  return new Date(unixSeconds * 1000).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
-}
-
 function row(label, value) {
   if (value === null || value === undefined || value === '') return '';
   return `<div class="metric-row"><span class="metric-label">${label}</span><span class="metric-value">${value}</span></div>`;
 }
 
+function addDays(dateStr, n) {
+  const d = new Date(dateStr + 'T00:00:00');
+  d.setDate(d.getDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function daysInMonth(year, month) {
+  return new Date(year, month, 0).getDate(); // month is 1-12
+}
+
+function monthLabel(year, month) {
+  return new Date(year, month - 1, 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+}
+
+function dayByDate(dateStr) {
+  return dataByDate.get(dateStr) || null;
+}
+
+function getMetricValue(day, key) {
+  if (!day) return null;
+  switch (key) {
+    case 'steps': return day.steps || 0;
+    case 'sleep_total': return day.sleep_total_min ? day.sleep_total_min / 60 : null;
+    case 'hr_avg': return day.raw?.heart_rate?.avg_hr ?? null;
+    case 'intensity': return day.raw?.intensity?.duration ?? null;
+    case 'standing': return day.raw?.valid_stand?.count ?? null;
+    default: return null;
+  }
+}
+
+// ---------- value label plugin (draws the number above each bar/point) ----------
+const valueLabelsPlugin = {
+  id: 'valueLabels',
+  afterDatasetsDraw(chart, args, opts) {
+    if (!opts || !opts.enabled) return;
+    if (chart.data.labels.length > 31) return; // avoid unreadable clutter on long ranges
+    const { ctx } = chart;
+    ctx.save();
+    ctx.font = '600 11px Inter, sans-serif';
+    ctx.textAlign = 'center';
+
+    chart.data.datasets.forEach((ds, dIdx) => {
+      if (ds.hideValueLabel) return;
+      const meta = chart.getDatasetMeta(dIdx);
+      if (meta.hidden) return;
+      ctx.fillStyle = ds.valueLabelColor || opts.color || '#22262F';
+      meta.data.forEach((el, i) => {
+        const val = ds.data[i];
+        if (val === null || val === undefined) return;
+        const text = opts.formatter ? opts.formatter(val) : val;
+        ctx.fillText(text, el.x, el.y - 8);
+      });
+    });
+
+    ctx.restore();
+  }
+};
+Chart.register(valueLabelsPlugin);
+
+// ---------- building the series for whatever mode is active ----------
+function buildSeries() {
+  const metricKeys = ['steps', 'sleep_total', 'hr_avg', 'intensity', 'standing'];
+
+  function extract(day) {
+    const o = {};
+    metricKeys.forEach(k => (o[k] = getMetricValue(day, k)));
+    return o;
+  }
+
+  function pushInto(target, day) {
+    const vals = extract(day);
+    metricKeys.forEach(k => {
+      if (!target[k]) target[k] = [];
+      target[k].push(vals[k]);
+    });
+  }
+
+  let labels = [];
+  let current = {};
+  let previous = null;
+  let targets = []; // day objects aligned with labels, for click handling
+
+  if (rangeMode === 'day') {
+    const day = dayByDate(selectedDate);
+    labels = [fmtFullDate(selectedDate)];
+    pushInto(current, day);
+    targets = [day];
+
+    if (compareEnabled) {
+      const prevDate = addDays(selectedDate, -1);
+      const prevDay = dayByDate(prevDate);
+      labels = [fmtDate(prevDate), fmtDate(selectedDate)];
+      current = {}; previous = {};
+      metricKeys.forEach(k => {
+        current[k] = [null, getMetricValue(day, k)];
+        previous[k] = [getMetricValue(prevDay, k), null];
+      });
+      targets = [prevDay, day];
+    }
+  } else if (rangeMode === 'month') {
+    const { year, month } = selectedMonth;
+    const dim = daysInMonth(year, month);
+    labels = Array.from({ length: dim }, (_, i) => String(i + 1));
+    targets = [];
+    for (let d = 1; d <= dim; d++) {
+      const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const day = dayByDate(dateStr);
+      pushInto(current, day);
+      targets.push(day);
+    }
+
+    if (compareEnabled) {
+      let py = year, pm = month - 1;
+      if (pm < 1) { pm = 12; py -= 1; }
+      const pdim = daysInMonth(py, pm);
+      previous = {};
+      for (let d = 1; d <= dim; d++) {
+        if (d <= pdim) {
+          const dateStr = `${py}-${String(pm).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+          pushInto(previous, dayByDate(dateStr));
+        } else {
+          pushInto(previous, null);
+        }
+      }
+    }
+  } else {
+    // preset
+    const filtered = getPresetWindow();
+    labels = filtered.map(d => fmtDate(d.date));
+    targets = filtered.slice();
+    filtered.forEach(d => pushInto(current, d));
+
+    if (compareEnabled && currentRangeDays > 0) {
+      const end = windowEndIndex === null ? allData.length : windowEndIndex;
+      const start = Math.max(0, end - currentRangeDays);
+      const prevEnd = start;
+      const prevStart = Math.max(0, prevEnd - currentRangeDays);
+      const prevSlice = allData.slice(prevStart, prevEnd);
+      const padCount = currentRangeDays - prevSlice.length;
+      previous = {};
+      for (let i = 0; i < padCount; i++) pushInto(previous, null);
+      prevSlice.forEach(d => pushInto(previous, d));
+    }
+  }
+
+  return { labels, current, previous, targets };
+}
+
+function getPresetWindow() {
+  if (currentRangeDays === 0) return allData;
+  if (windowEndIndex === null) windowEndIndex = allData.length;
+  windowEndIndex = Math.max(0, Math.min(windowEndIndex, allData.length));
+  const start = Math.max(0, windowEndIndex - currentRangeDays);
+  return allData.slice(start, windowEndIndex);
+}
+
+// ---------- day detail modal ----------
 function showDayDetail(day) {
+  if (!day) return;
   const raw = day.raw || {};
   const hr = raw.heart_rate;
   const intensity = raw.intensity;
@@ -376,11 +582,9 @@ function showDayDetail(day) {
   const stress = raw.stress;
   const spo2 = raw.spo2;
 
-  document.getElementById('modalTitle').textContent = new Date(day.date + 'T00:00:00')
-    .toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+  document.getElementById('modalTitle').textContent = fmtFullDate(day.date);
 
   let html = '';
-
   html += '<div class="section-title">Activity</div>';
   html += row('Steps', (day.steps || 0).toLocaleString());
   html += row('Distance', day.distance_m ? `${(day.distance_m / 1000).toFixed(2)} km` : null);
@@ -405,7 +609,7 @@ function showDayDetail(day) {
   if (hr) {
     html += row('Average', hr.avg_hr ? `${hr.avg_hr} bpm` : null);
     html += row('Resting', hr.avg_rhr ? `${hr.avg_rhr} bpm` : null);
-    html += row('Range', hr.min_hr && hr.max_hr ? `${hr.min_hr}–${hr.max_hr} bpm` : null);
+    html += row('Range', hr.min_hr && hr.max_hr ? `${hr.min_hr}\u2013${hr.max_hr} bpm` : null);
   } else {
     html += '<div class="empty-metric">No heart rate data for this day</div>';
   }
@@ -429,67 +633,94 @@ document.getElementById('modalBackdrop').addEventListener('click', (e) => {
   if (e.target.id === 'modalBackdrop') closeModal();
 });
 
-let currentFiltered = [];
-
-function getWindowedData() {
-  if (currentRangeDays === 0) return allData;
-  if (windowEndIndex === null) windowEndIndex = allData.length;
-  windowEndIndex = Math.max(0, Math.min(windowEndIndex, allData.length));
-  const start = Math.max(0, windowEndIndex - currentRangeDays);
-  return allData.slice(start, windowEndIndex);
+function onChartClick(elements) {
+  if (!elements.length) return;
+  const day = clickTargets[elements[0].index];
+  if (day) showDayDetail(day);
 }
 
-function updateNavControls(filtered) {
+// ---------- nav label + controls ----------
+function updateNavControls() {
   const backBtn = document.getElementById('navBack');
   const forwardBtn = document.getElementById('navForward');
   const label = document.getElementById('dateRangeLabel');
 
-  if (currentRangeDays === 0 || !filtered.length) {
-    backBtn.disabled = true;
-    forwardBtn.disabled = true;
-    label.textContent = currentRangeDays === 0 ? 'Full history' : '';
-    return;
+  if (rangeMode === 'day') {
+    backBtn.disabled = false;
+    forwardBtn.disabled = selectedDate >= todayStr();
+    label.textContent = fmtFullDate(selectedDate);
+  } else if (rangeMode === 'month') {
+    backBtn.disabled = false;
+    const now = new Date();
+    forwardBtn.disabled = selectedMonth.year > now.getFullYear() ||
+      (selectedMonth.year === now.getFullYear() && selectedMonth.month >= now.getMonth() + 1);
+    label.textContent = monthLabel(selectedMonth.year, selectedMonth.month);
+  } else {
+    if (currentRangeDays === 0) {
+      backBtn.disabled = true;
+      forwardBtn.disabled = true;
+      label.textContent = 'Full history';
+      return;
+    }
+    const end = windowEndIndex === null ? allData.length : windowEndIndex;
+    const start = Math.max(0, end - currentRangeDays);
+    backBtn.disabled = start <= 0;
+    forwardBtn.disabled = end >= allData.length;
+    const win = allData.slice(start, end);
+    label.textContent = win.length ? `${fmtDate(win[0].date)} \u2013 ${fmtDate(win[win.length - 1].date)}` : '';
   }
-
-  const end = windowEndIndex === null ? allData.length : windowEndIndex;
-  const start = Math.max(0, end - currentRangeDays);
-
-  backBtn.disabled = start <= 0;
-  forwardBtn.disabled = end >= allData.length;
-  label.textContent = `${fmtDate(filtered[0].date)} \u2013 ${fmtDate(filtered[filtered.length - 1].date)}`;
 }
 
 function shiftWindow(direction) {
-  if (currentRangeDays === 0) return;
-  const current = windowEndIndex === null ? allData.length : windowEndIndex;
-  windowEndIndex = Math.max(
-    Math.min(currentRangeDays, allData.length),
-    Math.min(current + direction * currentRangeDays, allData.length)
-  );
-  render(currentRangeDays);
+  if (rangeMode === 'day') {
+    const next = addDays(selectedDate, direction);
+    if (next > todayStr()) return;
+    selectedDate = next;
+  } else if (rangeMode === 'month') {
+    let { year, month } = selectedMonth;
+    month += direction;
+    if (month < 1) { month = 12; year -= 1; }
+    if (month > 12) { month = 1; year += 1; }
+    const now = new Date();
+    if (year > now.getFullYear() || (year === now.getFullYear() && month > now.getMonth() + 1)) return;
+    selectedMonth = { year, month };
+  } else {
+    if (currentRangeDays === 0) return;
+    const current = windowEndIndex === null ? allData.length : windowEndIndex;
+    windowEndIndex = Math.max(
+      Math.min(currentRangeDays, allData.length),
+      Math.min(current + direction * currentRangeDays, allData.length)
+    );
+  }
+  render();
 }
 
-function selectRange(days) {
-  currentRangeDays = days;
-  windowEndIndex = allData.length; // reset to the most recent window
-  render(days);
+function jumpToToday() {
+  if (rangeMode === 'day') {
+    selectedDate = todayStr();
+  } else if (rangeMode === 'month') {
+    const now = new Date();
+    selectedMonth = { year: now.getFullYear(), month: now.getMonth() + 1 };
+  } else {
+    windowEndIndex = allData.length;
+  }
+  render();
 }
 
-function render(days) {
-  currentRangeDays = days;
-  const filtered = getWindowedData();
-  currentFiltered = filtered;
-  updateNavControls(filtered);
-  const labels = filtered.map(d => fmtDate(d.date));
+function setActiveButton(el) {
+  document.querySelectorAll('#rangePicker button[data-mode]').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+}
 
-  const steps = filtered.map(d => d.steps || 0);
-  const deepHrs = filtered.map(d => (d.sleep_deep_min || 0) / 60);
-  const lightHrs = filtered.map(d => (d.sleep_light_min || 0) / 60);
-  const totalSleepHrs = filtered.map(d => (d.sleep_total_min || 0) / 60);
+// ---------- rendering ----------
+function render() {
+  const { labels, current, previous, targets } = buildSeries();
+  clickTargets = targets;
+  updateNavControls();
 
-  const avgSteps = Math.round(average(steps));
-  const avgSleep = average(totalSleepHrs);
-  const bestSteps = Math.max(0, ...steps);
+  const avgSteps = Math.round(average(current.steps || []));
+  const avgSleep = average(current.sleep_total || []);
+  const bestSteps = Math.max(0, ...(current.steps || []).filter(v => v !== null));
 
   document.getElementById('statsRow').innerHTML = `
     <div class="stat">
@@ -505,38 +736,53 @@ function render(days) {
       <div class="label">Best day (steps)</div>
     </div>
     <div class="stat">
-      <div class="value">${filtered.length}</div>
-      <div class="label">Days shown</div>
+      <div class="value">${labels.length}</div>
+      <div class="label">${rangeMode === 'day' ? (compareEnabled ? 'Days shown' : 'Day shown') : 'Days shown'}</div>
     </div>
   `;
 
-  if (stepsChart) stepsChart.destroy();
-  if (sleepChart) sleepChart.destroy();
-  if (heartRateChart) heartRateChart.destroy();
-  if (intensityChart) intensityChart.destroy();
-  if (standingChart) standingChart.destroy();
+  [stepsChart, sleepChart, heartRateChart, intensityChart, standingChart].forEach(c => c && c.destroy());
 
+  const isNight = false; // panel backgrounds are per-canvas via CSS class, ticks use fixed colors below
+
+  function buildBarDatasets(metricKey, colorVar, softVar, label, valueFormatter) {
+    const datasets = [{
+      label,
+      data: current[metricKey],
+      backgroundColor: getComputedStyle(document.documentElement).getPropertyValue(softVar),
+      borderColor: getComputedStyle(document.documentElement).getPropertyValue(colorVar),
+      borderWidth: 1.5,
+      borderRadius: 4,
+      maxBarThickness: 28,
+      valueLabelColor: getComputedStyle(document.documentElement).getPropertyValue(colorVar)
+    }];
+    if (previous) {
+      datasets.unshift({
+        label: label + ' (previous)',
+        data: previous[metricKey],
+        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--prev-fill'),
+        borderColor: getComputedStyle(document.documentElement).getPropertyValue('--prev-border'),
+        borderWidth: 1.5,
+        borderRadius: 4,
+        maxBarThickness: 28,
+        hideValueLabel: true
+      });
+    }
+    return datasets;
+  }
+
+  // Steps
   const stepsCtx = document.getElementById('stepsChart').getContext('2d');
   stepsChart = new Chart(stepsCtx, {
     type: 'bar',
-    data: {
-      labels,
-      datasets: [{
-        label: 'Steps',
-        data: steps,
-        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--steps-color-soft'),
-        borderColor: getComputedStyle(document.documentElement).getPropertyValue('--steps-color'),
-        borderWidth: 1.5,
-        borderRadius: 4,
-        maxBarThickness: 28
-      }]
-    },
+    data: { labels, datasets: buildBarDatasets('steps', '--steps-color', '--steps-color-soft', 'Steps') },
     options: {
       responsive: true,
-      onClick: (evt, elements) => {
-        if (elements.length) showDayDetail(currentFiltered[elements[0].index]);
+      onClick: (evt, elements) => onChartClick(elements),
+      plugins: {
+        legend: { display: !!previous, position: 'top', align: 'end', labels: { boxWidth: 12, font: { size: 12 } } },
+        valueLabels: { enabled: true, formatter: v => Math.round(v).toLocaleString() }
       },
-      plugins: { legend: { display: false } },
       scales: {
         x: { grid: { display: false } },
         y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.06)' } }
@@ -544,47 +790,48 @@ function render(days) {
     }
   });
 
+  // Sleep -- total hours only, so the number-at-top-of-bar is simple and readable
   const sleepCtx = document.getElementById('sleepChart').getContext('2d');
+  const sleepDatasets = [{
+    label: 'Total sleep',
+    data: current.sleep_total,
+    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--sleep-light'),
+    borderColor: getComputedStyle(document.documentElement).getPropertyValue('--sleep-color'),
+    borderWidth: 1.5,
+    borderRadius: 4,
+    maxBarThickness: 28,
+    valueLabelColor: '#EDEBF6'
+  }];
+  if (previous) {
+    sleepDatasets.unshift({
+      label: 'Total sleep (previous)',
+      data: previous.sleep_total,
+      backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--prev-fill-night'),
+      borderColor: getComputedStyle(document.documentElement).getPropertyValue('--prev-border-night'),
+      borderWidth: 1.5,
+      borderRadius: 4,
+      maxBarThickness: 28,
+      hideValueLabel: true
+    });
+  }
   sleepChart = new Chart(sleepCtx, {
     type: 'bar',
-    data: {
-      labels,
-      datasets: [
-        {
-          label: 'Deep sleep',
-          data: deepHrs,
-          backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--sleep-deep'),
-          stack: 'sleep',
-          borderRadius: 4,
-          maxBarThickness: 24
-        },
-        {
-          label: 'Light sleep',
-          data: lightHrs,
-          backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--sleep-light'),
-          stack: 'sleep',
-          borderRadius: 4,
-          maxBarThickness: 24
-        }
-      ]
-    },
+    data: { labels, datasets: sleepDatasets },
     options: {
       responsive: true,
-      onClick: (evt, elements) => {
-        if (elements.length) showDayDetail(currentFiltered[elements[0].index]);
-      },
+      onClick: (evt, elements) => onChartClick(elements),
       plugins: {
         legend: {
-          position: 'top',
-          align: 'end',
+          display: !!previous,
+          position: 'top', align: 'end',
           labels: { color: '#EDEBF6', boxWidth: 12, font: { size: 12 } }
-        }
+        },
+        valueLabels: { enabled: true, formatter: v => v.toFixed(1) + 'h' }
       },
       scales: {
         x: { grid: { display: false }, ticks: { color: '#B7BAD1' } },
         y: {
           beginAtZero: true,
-          stacked: true,
           title: { display: true, text: 'Hours', color: '#B7BAD1' },
           grid: { color: 'rgba(255,255,255,0.08)' },
           ticks: { color: '#B7BAD1' }
@@ -593,42 +840,38 @@ function render(days) {
     }
   });
 
-  const avgHr = filtered.map(d => d.raw?.heart_rate?.avg_hr ?? null);
-  const restingHr = filtered.map(d => d.raw?.heart_rate?.avg_rhr ?? null);
-  const intensityMin = filtered.map(d => d.raw?.intensity?.duration ?? null);
-  const standHours = filtered.map(d => d.raw?.valid_stand?.count ?? null);
-
+  // Heart rate -- average only, kept simple for comparison mode
+  const hrDatasets = [{
+    label: 'Average',
+    data: current.hr_avg,
+    borderColor: getComputedStyle(document.documentElement).getPropertyValue('--hr-color'),
+    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--hr-color'),
+    valueLabelColor: getComputedStyle(document.documentElement).getPropertyValue('--hr-color'),
+    tension: 0.3,
+    pointRadius: 3
+  }];
+  if (previous) {
+    hrDatasets.unshift({
+      label: 'Average (previous)',
+      data: previous.hr_avg,
+      borderColor: getComputedStyle(document.documentElement).getPropertyValue('--prev-border'),
+      backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--prev-border'),
+      borderDash: [4, 4],
+      tension: 0.3,
+      pointRadius: 3,
+      hideValueLabel: true
+    });
+  }
   const heartRateCtx = document.getElementById('heartRateChart').getContext('2d');
   heartRateChart = new Chart(heartRateCtx, {
     type: 'line',
-    data: {
-      labels,
-      datasets: [
-        {
-          label: 'Average',
-          data: avgHr,
-          borderColor: getComputedStyle(document.documentElement).getPropertyValue('--hr-color'),
-          backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--hr-color'),
-          tension: 0.3,
-          pointRadius: 3
-        },
-        {
-          label: 'Resting',
-          data: restingHr,
-          borderColor: getComputedStyle(document.documentElement).getPropertyValue('--rhr-color'),
-          backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--rhr-color'),
-          tension: 0.3,
-          pointRadius: 3
-        }
-      ]
-    },
+    data: { labels, datasets: hrDatasets },
     options: {
       responsive: true,
-      onClick: (evt, elements) => {
-        if (elements.length) showDayDetail(currentFiltered[elements[0].index]);
-      },
+      onClick: (evt, elements) => onChartClick(elements),
       plugins: {
-        legend: { position: 'top', align: 'end', labels: { boxWidth: 12, font: { size: 12 } } }
+        legend: { display: !!previous, position: 'top', align: 'end', labels: { boxWidth: 12, font: { size: 12 } } },
+        valueLabels: { enabled: true, formatter: v => Math.round(v) }
       },
       scales: {
         x: { grid: { display: false } },
@@ -637,27 +880,18 @@ function render(days) {
     }
   });
 
+  // Intensity
   const intensityCtx = document.getElementById('intensityChart').getContext('2d');
   intensityChart = new Chart(intensityCtx, {
     type: 'bar',
-    data: {
-      labels,
-      datasets: [{
-        label: 'Intensity minutes',
-        data: intensityMin,
-        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--intensity-color-soft'),
-        borderColor: getComputedStyle(document.documentElement).getPropertyValue('--intensity-color'),
-        borderWidth: 1.5,
-        borderRadius: 4,
-        maxBarThickness: 28
-      }]
-    },
+    data: { labels, datasets: buildBarDatasets('intensity', '--intensity-color', '--intensity-color-soft', 'Minutes') },
     options: {
       responsive: true,
-      onClick: (evt, elements) => {
-        if (elements.length) showDayDetail(currentFiltered[elements[0].index]);
+      onClick: (evt, elements) => onChartClick(elements),
+      plugins: {
+        legend: { display: !!previous, position: 'top', align: 'end', labels: { boxWidth: 12, font: { size: 12 } } },
+        valueLabels: { enabled: true, formatter: v => Math.round(v) }
       },
-      plugins: { legend: { display: false } },
       scales: {
         x: { grid: { display: false } },
         y: { beginAtZero: true, title: { display: true, text: 'Minutes' }, grid: { color: 'rgba(0,0,0,0.06)' } }
@@ -665,27 +899,18 @@ function render(days) {
     }
   });
 
+  // Standing
   const standingCtx = document.getElementById('standingChart').getContext('2d');
   standingChart = new Chart(standingCtx, {
     type: 'bar',
-    data: {
-      labels,
-      datasets: [{
-        label: 'Standing hours',
-        data: standHours,
-        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--stand-color-soft'),
-        borderColor: getComputedStyle(document.documentElement).getPropertyValue('--stand-color'),
-        borderWidth: 1.5,
-        borderRadius: 4,
-        maxBarThickness: 28
-      }]
-    },
+    data: { labels, datasets: buildBarDatasets('standing', '--stand-color', '--stand-color-soft', 'Hours') },
     options: {
       responsive: true,
-      onClick: (evt, elements) => {
-        if (elements.length) showDayDetail(currentFiltered[elements[0].index]);
+      onClick: (evt, elements) => onChartClick(elements),
+      plugins: {
+        legend: { display: !!previous, position: 'top', align: 'end', labels: { boxWidth: 12, font: { size: 12 } } },
+        valueLabels: { enabled: true, formatter: v => Math.round(v) }
       },
-      plugins: { legend: { display: false } },
       scales: {
         x: { grid: { display: false } },
         y: { beginAtZero: true, title: { display: true, text: 'Hours' }, grid: { color: 'rgba(0,0,0,0.06)' } }
@@ -694,6 +919,7 @@ function render(days) {
   });
 }
 
+// ---------- init ----------
 async function init() {
   try {
     const res = await fetch('/api/data', { cache: 'no-store' });
@@ -714,18 +940,44 @@ async function init() {
     return;
   }
 
-  render(30);
+  dataByDate = new Map(allData.map(d => [d.date, d]));
 
-  document.querySelectorAll('#rangePicker button[data-days]').forEach(btn => {
+  render();
+
+  document.querySelectorAll('#rangePicker button[data-mode]').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('#rangePicker button[data-days]').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      selectRange(parseInt(btn.dataset.days, 10));
+      const mode = btn.dataset.mode;
+      setActiveButton(btn);
+
+      if (mode === 'preset') {
+        rangeMode = 'preset';
+        currentRangeDays = parseInt(btn.dataset.days, 10);
+        windowEndIndex = allData.length;
+      } else if (mode === 'day') {
+        rangeMode = 'day';
+        selectedDate = allData.length ? allData[allData.length - 1].date : todayStr();
+      } else if (mode === 'month') {
+        rangeMode = 'month';
+        const now = new Date();
+        let year = now.getFullYear(), month = now.getMonth() + 1;
+        if (btn.dataset.which === 'last') {
+          month -= 1;
+          if (month < 1) { month = 12; year -= 1; }
+        }
+        selectedMonth = { year, month };
+      }
+      render();
     });
   });
 
   document.getElementById('navBack').addEventListener('click', () => shiftWindow(-1));
   document.getElementById('navForward').addEventListener('click', () => shiftWindow(1));
+  document.getElementById('navToday').addEventListener('click', jumpToToday);
+
+  document.getElementById('compareToggle').addEventListener('change', (e) => {
+    compareEnabled = e.target.checked;
+    render();
+  });
 
   document.addEventListener('keydown', (e) => {
     if (document.getElementById('modalBackdrop').classList.contains('open')) return;
